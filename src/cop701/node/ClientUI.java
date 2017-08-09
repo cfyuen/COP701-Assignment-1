@@ -26,7 +26,7 @@ public class ClientUI
 			     });
 		 b2.addActionListener(new ActionListener(){  
 			 public void actionPerformed(ActionEvent e){  
-			             client.getNeighbor(); 
+			             //client.getNeighbor(); 
 			         }  
 			     });
 		}

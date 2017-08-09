@@ -6,28 +6,32 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
-import cop701.master.Master;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Client {
 	
-	private int port;
+	private String account;
+	private Address address;
 	private ServerSocket serverSocket;
+	
+	private Map<String, Address> nodesMap = new HashMap<String, Address>();
 	
 	/**
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
-	public Client(int port) throws IOException {
+	public Client(int id, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
-		this.port = serverSocket.getLocalPort();
+		this.account = String.valueOf(id);
+		this.address = new Address("localhost", serverSocket.getLocalPort());
 	}
 	
 	public void start() throws IOException {
 		ClientUI cui=new ClientUI();
-		cui.clientUI(port,this);
+		cui.clientUI(address.getPort(),this);
+		System.out.println("Listening on port " + address.getPort());
 		while (true) {
-			System.out.println("Listening on port " + port);
 			new ClientListener(serverSocket.accept()).run();
 			
 		}
@@ -38,21 +42,7 @@ public class Client {
 	}
 	
 	public void hello() {
-		System.out.println("Hello World at " + port);
-	}
-	
-	public void getNeighbor() {
-		int nearbyPort = Master.getNearbyNode(port);
-		System.out.println("My [" + port + "] nearby port is " + nearbyPort);
-		try {
-			connectTo("localhost", nearbyPort);
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println("Hello World at " + address.getPort());
 	}
 	
 	public void connectTo(String ip, int neighborPort) throws UnknownHostException, IOException {
@@ -60,8 +50,16 @@ public class Client {
 		connectSocket.close();
 	}
 	
-	public int getPort() {
-		return port;
+	public String getAccount() {
+		return account;
+	}
+	
+	public Address getAddress() {
+		return address;
+	}
+	
+	public void addNodeIdentity(String account, Address address) {
+		nodesMap.put(account, address);
 	}
 }
 
