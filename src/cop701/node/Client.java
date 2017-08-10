@@ -32,7 +32,7 @@ public class Client {
 		cui.clientUI(address.getPort(),this);
 		System.out.println("Listening on port " + address.getPort());
 		while (true) {
-			new ClientListener(serverSocket.accept()).run();
+			new ClientListener(this, serverSocket.accept()).run();
 			
 		}
 	}
@@ -43,6 +43,17 @@ public class Client {
 	
 	public void hello() {
 		System.out.println("Hello World at " + address.getPort());
+	}
+	
+	public void listenTransaction(Transaction transaction) {
+		TransactionResponse response = new TransactionResponse();
+		response.setTransactionId(transaction.getTransactionId());
+		response.setTransactionCommitted(true);
+		// TODO send transaction
+	}
+	
+	public void receiveBroadcast(Transaction transaction) {
+		// TODO verify transaction and add to ledger
 	}
 	
 	public void connectTo(String ip, int neighborPort) throws UnknownHostException, IOException {

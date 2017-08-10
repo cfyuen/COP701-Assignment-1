@@ -71,4 +71,12 @@ public class Transaction implements Serializable{
 		this.inputTransactions = inputTransactions;
 	}
 
+	public boolean isTransactionCommitted() {
+		return transactionCommitted;
+	}
+
+	public void setTransactionCommitted(boolean transactionCommitted) {
+		this.transactionCommitted = transactionCommitted;
+	}
+
 }
