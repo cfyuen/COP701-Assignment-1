@@ -3,6 +3,8 @@ package cop701.node;
 import cop701.node.ClientUI;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -14,6 +16,10 @@ public class Client {
 	private String accountId;
 	private Address address;
 	private ServerSocket serverSocket;
+	private ObjectInputStream inputStream1 = null;
+	private ObjectOutputStream outputStream1 = null;
+	private ObjectInputStream inputStream2 = null;
+	private ObjectOutputStream outputStream2 = null;
 	
 	private Map<String, Address> nodesMap = new HashMap<String, Address>();
 	
@@ -28,12 +34,11 @@ public class Client {
 	}
 	
 	public void start() throws IOException {
-		ClientUI cui=new ClientUI();
-		cui.clientUI(address.getPort(),this);
+		//ClientUI cui=new ClientUI();
+		//cui.clientUI(address.getPort(),this);
 		System.out.println("Listening on port " + address.getPort());
 		while (true) {
-			new ClientListener(serverSocket.accept()).run();
-			
+			new ClientListener(serverSocket.accept()).run();	
 		}
 	}
 	
@@ -58,7 +63,27 @@ public class Client {
 		return address;
 	}
 	
-	public void addNodeIdentity(String account, Address address) {
-		nodesMap.put(account, address);
+	public void addNodeIdentity(String accountId, Address address) {
+		nodesMap.put(accountId, address);
+	}
+	
+	public void initiateTransaction() throws UnknownHostException, IOException	
+	{
+		Transaction t = new Transaction();
+		t.setTransactionId("1");
+		t.setAmount(2);
+		t.setSenderId("0");
+		t.setReceiverId("3");
+		t.setWitnessId("4");
+		
+		Socket withReceiver = new Socket("localhost",nodesMap.get(t.getReceiverId()).getPort());
+		outputStream1 = new ObjectOutputStream(withReceiver.getOutputStream());
+		outputStream1.writeObject(t);
+		withReceiver.close();
+		
+		Socket withWitness = new Socket("localhost",nodesMap.get(t.getWitnessId()).getPort());
+		outputStream2 = new ObjectOutputStream(withWitness.getOutputStream());
+		outputStream2.writeObject(t);
+		withWitness.close();
 	}
 }
