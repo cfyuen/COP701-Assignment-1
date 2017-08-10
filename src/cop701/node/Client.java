@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Client {
 	
-	private String account;
+	private String accountId;
 	private Address address;
 	private ServerSocket serverSocket;
 	
@@ -23,7 +23,7 @@ public class Client {
 	 */
 	public Client(int id, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
-		this.account = String.valueOf(id);
+		this.accountId = String.valueOf(id);
 		this.address = new Address("localhost", serverSocket.getLocalPort());
 	}
 	
@@ -51,7 +51,7 @@ public class Client {
 	}
 	
 	public String getAccount() {
-		return account;
+		return accountId;
 	}
 	
 	public Address getAddress() {
@@ -60,18 +60,5 @@ public class Client {
 	
 	public void addNodeIdentity(String account, Address address) {
 		nodesMap.put(account, address);
-	}
-}
-
-class ClientListener extends Thread {
-	
-	private Socket socket; 
-	
-	public ClientListener(Socket socket) {
-		this.socket = socket;
-	}
-	
-	public void run() {
-		System.out.println("Client connected on port " + socket.getLocalPort());
 	}
 }
