@@ -6,7 +6,7 @@ public class TransactionResponse implements Serializable {
 	
 	private static final long serialVersionUID = 8758973589641525319L;
 	String transactionId;
-	boolean transactionCommitted;
+	boolean transactionValid;
 	
 	public String getTransactionId() {
 		return transactionId;
@@ -16,12 +16,12 @@ public class TransactionResponse implements Serializable {
 		this.transactionId = transactionId;
 	}
 	
-	public boolean isTransactionCommitted() {
-		return transactionCommitted;
+	public boolean isTransactionValid() {
+		return transactionValid;
 	}
 	
-	public void setTransactionCommitted(boolean transactionCommitted) {
-		this.transactionCommitted = transactionCommitted;
+	public void setTransactionValid(boolean transactionValid) {
+		this.transactionValid = transactionValid;
 	}
 	
 }

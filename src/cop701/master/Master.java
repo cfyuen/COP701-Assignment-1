@@ -1,6 +1,7 @@
 package cop701.master;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +15,10 @@ public class Master {
 	/**
 	 * This is the main entry point for the program
 	 * @param args
+	 * @throws IOException 
+	 * @throws UnknownHostException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws UnknownHostException, IOException {
 		clients = new ArrayList<Client>();
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
@@ -48,6 +51,8 @@ public class Master {
 				clients.get(i).addNodeIdentity(otherClient.getAccount(), otherClient.getAddress());
 			}
 		}
+		
+		clients.get(0).initiateTransaction(2.0,"2","3","10");
 	}
 	
 }

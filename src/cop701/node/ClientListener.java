@@ -33,13 +33,17 @@ public class ClientListener extends Thread {
 		
 		if (inObject instanceof Transaction) {
 			Transaction transaction = (Transaction)inObject;
-			if (transaction.isTransactionCommitted()) {
+			if (transaction.isWitnessCommitted() && transaction.isReceiverCommitted()) {
 				client.receiveBroadcast(transaction);
 			}
-			else {
+			else
 				client.listenTransaction(transaction);
-			}
 		}
+		
+		else if(inObject instanceof TransactionResponse) {
+			client.handleTransactionResponse((TransactionResponse)inObject);
+		}
+		
 		else {
 			System.out.println("Unknown object received");
 		}
