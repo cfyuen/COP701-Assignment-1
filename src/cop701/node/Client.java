@@ -54,7 +54,20 @@ public class Client {
 		TransactionResponse response = new TransactionResponse();
 		response.setTransactionId(transaction.getTransactionId());
 		response.setTransactionCommitted(true);
-		// TODO send transaction
+		
+		Socket sender;
+		ObjectOutputStream outputStream;
+		try {
+			sender = new Socket("localhost",nodesMap.get(transaction.getSenderId()).getPort());
+			outputStream = new ObjectOutputStream(sender.getOutputStream());
+			System.out.println("Node " + this.accountId + ":  Writing object " + response.getClass().getSimpleName() + " to " + sender.getPort() + " [id: " + response.getTransactionId() + "]");
+			outputStream.writeObject(response);
+			sender.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
@@ -96,5 +109,7 @@ public class Client {
 		outputStream2 = new ObjectOutputStream(withWitness.getOutputStream());
 		outputStream2.writeObject(t);
 		withWitness.close();
+		
 	}
+	
 }
