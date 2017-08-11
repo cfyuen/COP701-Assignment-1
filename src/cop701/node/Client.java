@@ -3,7 +3,6 @@ package cop701.node;
 import cop701.node.ClientUI;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -53,7 +52,9 @@ public class Client {
 	public void listenTransaction(Transaction transaction) {
 		TransactionResponse response = new TransactionResponse();
 		response.setTransactionId(transaction.getTransactionId());
+
 		response.setTransactionValid(true);
+
 		Socket sender;
 		ObjectOutputStream outputStream;
 		try {
@@ -165,7 +166,5 @@ public class Client {
 				inProgressTransactions.remove(t);
 			}
 		}
-		
-		
 	}
 }

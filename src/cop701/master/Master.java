@@ -1,9 +1,13 @@
 package cop701.master;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.LogManager;
 
 import cop701.node.Client;
 
@@ -18,7 +22,11 @@ public class Master {
 	 * @throws IOException 
 	 * @throws UnknownHostException 
 	 */
+
 	public static void main(String[] args) throws UnknownHostException, IOException {
+	
+		setup();
+		
 		clients = new ArrayList<Client>();
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
@@ -52,7 +60,26 @@ public class Master {
 			}
 		}
 		
+
 		clients.get(0).initiateTransaction(2.0,"2","3","10");
+
+	}
+	
+	public static void setup() {
+		Locale.setDefault(Locale.US);
+		try {
+			LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 }
