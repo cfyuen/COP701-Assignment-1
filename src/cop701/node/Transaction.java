@@ -15,12 +15,14 @@ public class Transaction implements Serializable{
 	String senderId;
 	String receiverId;
 	String witnessId;
-	List<String> inputTransactions;
-	boolean transactionCommitted;
+	List<String> inputTransactions;  
+	boolean witnessCommitted;
+	boolean receiverCommitted;
 	
 	public Transaction()
 	{
-		transactionCommitted=false;
+		witnessCommitted=false;
+		receiverCommitted=false;
 	}
 
 	public String getTransactionId() {
@@ -71,4 +73,19 @@ public class Transaction implements Serializable{
 		this.inputTransactions = inputTransactions;
 	}
 
+	public boolean isWitnessCommitted() {
+		return witnessCommitted;
+	}
+
+	public boolean isReceiverCommitted() {
+		return receiverCommitted;
+	}
+	
+	public void setWitnessCommitted(boolean witnessCommitted) {
+		this.witnessCommitted = witnessCommitted;
+	}
+
+	public void setReceiverCommitted(boolean receiverCommitted) {
+		this.receiverCommitted = receiverCommitted;
+	}
 }
