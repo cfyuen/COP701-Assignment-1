@@ -4,8 +4,11 @@ package cop701.node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class ClientListener extends Thread {
+	
+	private static final Logger logger = Logger.getLogger(ClientListener.class.getName()); 
 	
 	private Client client;
 	private Socket socket; 
@@ -16,7 +19,7 @@ public class ClientListener extends Thread {
 	}
 	
 	public void run() {
-		System.out.println("Client connected on port " + socket.getLocalPort());
+		logger.info("Client connected on port " + socket.getLocalPort());
 		
 		Object inObject = null;
 		
@@ -33,13 +36,17 @@ public class ClientListener extends Thread {
 		
 		if (inObject instanceof Transaction) {
 			Transaction transaction = (Transaction)inObject;
-			if (transaction.isTransactionCommitted()) {
+			if (transaction.isWitnessCommitted() && transaction.isReceiverCommitted()) {
 				client.receiveBroadcast(transaction);
 			}
-			else {
+			else
 				client.listenTransaction(transaction);
-			}
 		}
+		
+		else if(inObject instanceof TransactionResponse) {
+			client.handleTransactionResponse((TransactionResponse)inObject);
+		}
+		
 		else {
 			System.out.println("Unknown object received");
 		}
