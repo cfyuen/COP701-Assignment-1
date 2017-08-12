@@ -17,10 +17,13 @@ public class Client {
 	private List<Transaction> inProgressTransactions;
 	private ClientWriter clientWriter;
 	
+	private Map<String, Address> nodesMap = new HashMap<String, Address>();
+	
 	/**
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
+	
 	public Client(int id, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
 		this.accountId = String.valueOf(id);
@@ -62,11 +65,15 @@ public class Client {
 	
 	public void broadcast(Transaction t)
 	{
-		// TODO broadcast transaction to all the live nodes
+				
+		for(String  key:nodesMap.keySet())
+		{
+			clientWriter.sendObject(key,t);
+		}
 	}
 	
 	public void addNodeIdentity(String accountId, Address address) {
-		clientWriter.addNodeIdentity(accountId, address);
+		nodesMap.put(accountId, address);
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
@@ -94,19 +101,17 @@ public class Client {
 					t.setReceiverCommitted(tr.isTransactionValid());
 				else
 					t.setWitnessCommitted(tr.isTransactionValid());
+				
+				if(t.isWitnessCommitted() && t.isReceiverCommitted())
+				{
+					broadcast(t);
+					inProgressTransactions.remove(t);
+				}
+		
 				break;
 			}
 		}
 		
-		for(Transaction t:inProgressTransactions)
-		{
-			if(t.isReceiverCommitted() && t.isWitnessCommitted())
-			{
-				broadcast(t);
-				inProgressTransactions.remove(t);
-				break;
-			}
-		}
 	}
 	
 	public String getAccount() {
@@ -115,5 +120,9 @@ public class Client {
 	
 	public Address getAddress() {
 		return address;
+	}
+
+	public Map<String, Address> getNodesMap() {
+		return nodesMap;
 	}
 }

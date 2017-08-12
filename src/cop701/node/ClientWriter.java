@@ -3,8 +3,6 @@ package cop701.node;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class ClientWriter {
@@ -12,7 +10,7 @@ public class ClientWriter {
 	private static final Logger logger = Logger.getLogger(ClientWriter.class.getName()); 
 	
 	private Client client;
-	private Map<String, Address> nodesMap = new HashMap<String, Address>();
+	
 	
 	public ClientWriter(Client client) {
 		this.client = client;
@@ -22,7 +20,7 @@ public class ClientWriter {
 		Socket recipientSocket;
 		ObjectOutputStream outputStream;
 		try {
-			Address address = nodesMap.get(recipient);
+			Address address = client.getNodesMap().get(recipient);
 			recipientSocket = new Socket(address.getIp(),address.getPort());
 			outputStream = new ObjectOutputStream(recipientSocket.getOutputStream());
 			logger.info("Node " + client.getAccount() + " is sending " + obj.getClass().getSimpleName() + " to node " + recipient);
@@ -33,10 +31,6 @@ public class ClientWriter {
 			logger.warning("ClientWriter has some issues while writing to socket");
 			e.printStackTrace();
 		}
-	}
-	
-	public void addNodeIdentity(String accountId, Address address) {
-		nodesMap.put(accountId, address);
 	}
 	
 }
