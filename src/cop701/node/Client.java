@@ -3,10 +3,7 @@ package cop701.node;
 import cop701.node.ClientUI;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +15,7 @@ public class Client {
 	private Address address;
 	private ServerSocket serverSocket;
 	private List<Transaction> inProgressTransactions;
-	
-	private Map<String, Address> nodesMap = new HashMap<String, Address>();
+	private ClientWriter clientWriter;
 	
 	/**
 	 * This is the main program for client node
@@ -30,6 +26,7 @@ public class Client {
 		this.accountId = String.valueOf(id);
 		this.address = new Address("localhost", serverSocket.getLocalPort());
 		inProgressTransactions = new ArrayList<Transaction>();
+		clientWriter = new ClientWriter(this);
 	}
 	
 	public void start() throws IOException {
@@ -55,19 +52,8 @@ public class Client {
 
 		response.setTransactionValid(true);
 
-		Socket sender;
-		ObjectOutputStream outputStream;
-		try {
-			sender = new Socket("localhost",nodesMap.get(transaction.getSenderId()).getPort());
-			outputStream = new ObjectOutputStream(sender.getOutputStream());
-			System.out.println("Node " + this.accountId + ":  Writing object " + response.getClass().getSimpleName() + " to " + sender.getPort() + " [id: " + response.getTransactionId() + "]");
-			outputStream.writeObject(response);
-			sender.close();
-		}
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println("Node " + this.accountId + ":  Writing object " + response.getClass().getSimpleName() + " to node " + transaction.getSenderId() + " [id: " + response.getTransactionId() + "]");
+		clientWriter.sendObject(transaction.getSenderId(), response);
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
@@ -79,21 +65,8 @@ public class Client {
 		// TODO broadcast transaction to all the live nodes
 	}
 	
-	public void connectTo(String ip, int neighborPort) throws UnknownHostException, IOException {
-		Socket connectSocket = new Socket(ip, neighborPort);
-		connectSocket.close();
-	}
-	
-	public String getAccount() {
-		return accountId;
-	}
-	
-	public Address getAddress() {
-		return address;
-	}
-	
 	public void addNodeIdentity(String accountId, Address address) {
-		nodesMap.put(accountId, address);
+		clientWriter.addNodeIdentity(accountId, address);
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
@@ -106,42 +79,9 @@ public class Client {
 		t.setWitnessId(witnessId);
 		
 		inProgressTransactions.add(t);
-		
-		ObjectOutputStream outputStream1 = null;
-		ObjectOutputStream outputStream2 = null;
-		
-		
-		Socket withReceiver;
-
-		try {
-			withReceiver = new Socket("localhost",nodesMap.get(t.getReceiverId()).getPort());
-			outputStream1 = new ObjectOutputStream(withReceiver.getOutputStream());
-			outputStream1.writeObject(t);
-			
-			withReceiver.close();
-		} 
-		
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-		
-		}
-		
-		
-		Socket withWitness;
-		
-		try {
-			withWitness = new Socket("localhost",nodesMap.get(t.getWitnessId()).getPort());
-			outputStream2 = new ObjectOutputStream(withWitness.getOutputStream());
-			outputStream2.writeObject(t);
-			withWitness.close();
-		} 
-		
-		catch (IOException e) {
-			// TODO Auto-generated catch block
-		
-		}
-		
-			// transaction Invalidated by either receiver or witness
+	
+		clientWriter.sendObject(t.getReceiverId(), t);
+		clientWriter.sendObject(t.getWitnessId(), t);
 	}
 	
 	public void handleTransactionResponse(TransactionResponse tr)
@@ -164,7 +104,16 @@ public class Client {
 			{
 				broadcast(t);
 				inProgressTransactions.remove(t);
+				break;
 			}
 		}
+	}
+	
+	public String getAccount() {
+		return accountId;
+	}
+	
+	public Address getAddress() {
+		return address;
 	}
 }
