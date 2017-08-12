@@ -74,9 +74,18 @@ public class Client {
 		// TODO verify transaction and add to ledger
 	}
 	
-	public void broadcast(Transaction t)
+	public void broadcast(Transaction t) throws UnknownHostException, IOException
 	{
-		// TODO broadcast transaction to all the live nodes
+		Socket sock;
+		ObjectOutputStream outputStream = null;
+		
+		for(String  key:nodesMap.keySet())
+		{
+			sock = new Socket("localhost",nodesMap.get(key).getPort());
+			outputStream = new ObjectOutputStream(sock.getOutputStream());
+			outputStream.writeObject(t);
+			sock.close();
+		}
 	}
 	
 	public void connectTo(String ip, int neighborPort) throws UnknownHostException, IOException {
@@ -144,7 +153,7 @@ public class Client {
 			// transaction Invalidated by either receiver or witness
 	}
 	
-	public void handleTransactionResponse(TransactionResponse tr)
+	public void handleTransactionResponse(TransactionResponse tr) throws UnknownHostException, IOException
 	{
 		for(Transaction t:inProgressTransactions)
 		{
@@ -154,17 +163,16 @@ public class Client {
 					t.setReceiverCommitted(tr.isTransactionValid());
 				else
 					t.setWitnessCommitted(tr.isTransactionValid());
+				
+				if(t.isWitnessCommitted() && t.isReceiverCommitted())
+				{
+					broadcast(t);
+					inProgressTransactions.remove(t);
+				}
+		
 				break;
 			}
 		}
 		
-		for(Transaction t:inProgressTransactions)
-		{
-			if(t.isReceiverCommitted() && t.isWitnessCommitted())
-			{
-				broadcast(t);
-				inProgressTransactions.remove(t);
-			}
-		}
 	}
 }

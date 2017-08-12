@@ -44,7 +44,12 @@ public class ClientListener extends Thread {
 		}
 		
 		else if(inObject instanceof TransactionResponse) {
-			client.handleTransactionResponse((TransactionResponse)inObject);
+			try {
+				client.handleTransactionResponse((TransactionResponse)inObject);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		else {
