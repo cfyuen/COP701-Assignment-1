@@ -40,7 +40,7 @@ public class Master {
 			}
 		}
 		
-		clients.get(0).hello();
+		//clients.get(0).hello();
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
 			for (int j=0; j<CLIENT_COUNT; j++) {

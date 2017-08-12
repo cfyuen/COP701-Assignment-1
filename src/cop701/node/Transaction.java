@@ -17,6 +17,7 @@ public class Transaction implements Serializable{
 	String witnessId;
 	List<String> inputTransactions;
 	boolean transactionCommitted;
+	boolean valid;
 	
 	public Transaction()
 	{
