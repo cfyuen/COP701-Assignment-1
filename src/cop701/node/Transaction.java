@@ -24,6 +24,7 @@ public class Transaction implements Serializable{
 	public Transaction()
 	{
 		witnessCommitted=false;
+		receiverCommitted=false;
 	}
 
 	public String getTransactionId() {
