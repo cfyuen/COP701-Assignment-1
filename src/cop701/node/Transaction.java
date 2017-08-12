@@ -18,6 +18,8 @@ public class Transaction implements Serializable{
 	List<String> inputTransactions;  
 	boolean witnessCommitted;
 	boolean receiverCommitted;
+	boolean valid;
+
 	
 	public Transaction()
 	{
