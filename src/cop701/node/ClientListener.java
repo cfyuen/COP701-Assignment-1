@@ -4,6 +4,12 @@ package cop701.node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.SignedObject;
 import java.util.logging.Logger;
 
 public class ClientListener extends Thread {
@@ -19,23 +25,24 @@ public class ClientListener extends Thread {
 	}
 	
 	public void run() {
-		logger.info("Client connected on port " + socket.getLocalPort());
+		logger.info("Client connected on " + socket.getLocalPort());
 		
-		Object inObject = null;
+		Object verifiedObject = null;
 		
 		try {
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-			inObject = in.readObject();
+			Object inObject = in.readObject();
+			// This method will check digital signature
+			verifiedObject = decodeAndVerify(inObject);
 		} catch (IOException e) {
 			System.out.println("Error in reading object from input stream");
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		if (inObject instanceof Transaction) {
-			Transaction transaction = (Transaction)inObject;
+		if (verifiedObject instanceof Transaction) {
+			Transaction transaction = (Transaction)verifiedObject;
 			if (transaction.isWitnessCommitted() && transaction.isReceiverCommitted()) {
 				client.receiveBroadcast(transaction);
 			}
@@ -43,8 +50,8 @@ public class ClientListener extends Thread {
 				client.listenTransaction(transaction);
 		}
 		
-		else if(inObject instanceof TransactionResponse) {
-			client.handleTransactionResponse((TransactionResponse)inObject);
+		else if(verifiedObject instanceof TransactionResponse) {
+			client.handleTransactionResponse((TransactionResponse)verifiedObject);
 		}
 		
 		else {
@@ -52,4 +59,56 @@ public class ClientListener extends Thread {
 		}
 		
 	}
+	
+	private Object decodeAndVerify(Object inObject) {
+		String originAccountId = "";
+		try {
+			originAccountId = getInputAccountId(inObject);
+		} catch (ClassNotFoundException | IOException e1) {
+			e1.printStackTrace();
+		}
+		PublicKey publicKey = getPublicKeyFromPastry(originAccountId);
+		Object verifiedObject = null;
+		try {
+			verifiedObject = verifySignature(inObject, publicKey);
+		} catch (InvalidKeyException | SignatureException | NoSuchAlgorithmException | ClassNotFoundException
+				| IOException e) {
+			e.printStackTrace();
+		}
+		return verifiedObject;
+	}
+
+	public String getInputAccountId(Object inObject) throws ClassNotFoundException, IOException {
+		if (inObject instanceof SignedObject) {
+			SignedObject so = (SignedObject)inObject;
+			Object o = so.getObject();
+			if (o instanceof BaseTransaction) {
+				return ((BaseTransaction)o).getOriginAccountId();
+			}
+		}
+		return "";
+	}
+	
+	public Object verifySignature(Object inObject, PublicKey publicKey) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException, ClassNotFoundException, IOException {
+		Signature signature = null;
+		signature = Signature.getInstance(publicKey.getAlgorithm());
+		if (inObject instanceof SignedObject) {
+			SignedObject so = (SignedObject)inObject;
+			boolean validSign = so.verify(publicKey, signature);
+			if (validSign) {
+				return so.getObject();
+			}
+			else {
+				throw new SignatureException("Wrong signature");
+			}
+		}
+		else {
+			throw new SignatureException("Object received is not signed");
+		}
+	}
+	
+	public PublicKey getPublicKeyFromPastry(String accountId) {
+		return client.getPastry().get(accountId);
+	}
+	
 }

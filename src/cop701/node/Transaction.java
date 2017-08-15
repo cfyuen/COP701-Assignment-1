@@ -1,10 +1,9 @@
 package cop701.node;
 
-import java.io.Serializable;
 import java.util.List;
 
 
-public class Transaction implements Serializable{
+public class Transaction extends BaseTransaction {
 	
 	/**
 	 * This is the transaction object used in Socket transfer

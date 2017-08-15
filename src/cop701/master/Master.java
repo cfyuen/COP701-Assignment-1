@@ -56,11 +56,11 @@ public class Master {
 
 		addNodeIdentityMap();
 		initializeLedger();
-
+		
 		clients.get(0).initiateTransaction(2.0,"2","3","10");
 
 	}
-	
+
 
 	private static void setup() {
 		Locale.setDefault(Locale.US);
@@ -84,6 +84,7 @@ public class Master {
 			for (int j=0; j<CLIENT_COUNT; j++) {
 				Client otherClient = clients.get(j);
 				clients.get(i).addNodeIdentity(otherClient.getAccount(), otherClient.getAddress());
+				clients.get(i).addPublicKey(otherClient.getAccount(), otherClient.getPublicKey());
 			}
 		}
 	}
@@ -105,6 +106,5 @@ public class Master {
 			}
 		}
 	}
-		
 	
 }

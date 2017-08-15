@@ -1,10 +1,12 @@
 package cop701.node;
 
-import java.io.Serializable;
 
-public class TransactionResponse implements Serializable {
+public class TransactionResponse extends BaseTransaction {
 	
-	private static final long serialVersionUID = 8758973589641525319L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6262397620814220298L;
 	private String transactionId;
 	private boolean transactionValid;
 	
