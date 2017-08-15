@@ -7,18 +7,18 @@ import java.util.List;
 public class Transaction implements Serializable{
 	
 	/**
-	 * 
+	 * This is the transaction object used in Socket transfer
 	 */
 	private static final long serialVersionUID = 8542256702717862972L;
-	String transactionId;
-	double amount;
-	String senderId;
-	String receiverId;
-	String witnessId;
-	List<String> inputTransactions;  
-	boolean witnessCommitted;
-	boolean receiverCommitted;
-	boolean valid;
+	private String transactionId;
+	private double amount;
+	private String senderId;
+	private String receiverId;
+	private String witnessId;
+	private List<String> inputTransactions;  
+	private boolean witnessCommitted;
+	private boolean receiverCommitted;
+	private boolean valid;
 
 	
 	public Transaction()
@@ -89,5 +89,13 @@ public class Transaction implements Serializable{
 
 	public void setReceiverCommitted(boolean receiverCommitted) {
 		this.receiverCommitted = receiverCommitted;
+	}
+
+	public boolean isValid() {
+		return valid;
+	}
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
 	}
 }

@@ -16,6 +16,7 @@ public class Client {
 	private ServerSocket serverSocket;
 	private List<Transaction> inProgressTransactions;
 	private ClientWriter clientWriter;
+	private Ledger ledger;
 	
 	private Map<String, Address> nodesMap = new HashMap<String, Address>();
 	
@@ -30,6 +31,7 @@ public class Client {
 		this.address = new Address("localhost", serverSocket.getLocalPort());
 		inProgressTransactions = new ArrayList<Transaction>();
 		clientWriter = new ClientWriter(this);
+		ledger = new Ledger();
 	}
 	
 	public void start() throws IOException {
@@ -124,5 +126,9 @@ public class Client {
 
 	public Map<String, Address> getNodesMap() {
 		return nodesMap;
+	}
+
+	public Ledger getLedger() {
+		return ledger;
 	}
 }

@@ -14,37 +14,38 @@ public class LedgerTest {
 		Ledger ledger = new Ledger();
 		
 		Transaction self = new Transaction();
-		self.transactionId="N1T0123";
-		self.amount = 100.0;
-		self.senderId="a";
-		self.receiverId="b";
-		self.witnessId="c";
-		self.inputTransactions=null;
-		self.valid=true;
+
+		self.setTransactionId("N1T123");
+		self.setAmount(100.0);
+		self.setSenderId("a");
+		self.setReceiverId("b");
+		self.setWitnessId("c");
+		self.setValid(true);
+
 		
 		ledger.addTransaction(self);
 		
 		Transaction self1 = new Transaction();
-		self1.transactionId="N3T0125";
-		self1.amount = 100.0;
-		self1.senderId="c";
-		self1.receiverId="b";
-		self1.witnessId="a";
-		self1.inputTransactions=null;
-		self1.valid=true;
+		self1.setTransactionId("N3T125");
+		self1.setAmount(100.0);
+		self1.setSenderId("c");
+		self1.setReceiverId("b");
+		self1.setWitnessId("a");
+		self1.setInputTransactions(null);
+		self1.setValid(true);
 		
 		ledger.addTransaction(self1);
 		ArrayList<String> list=new ArrayList<String>();
-		  list.add("N1T0123"); 
-		  list.add("N3T0125");  
+		  list.add("N1T123"); 
+		  list.add("N3T125");  
 		Transaction verify = new Transaction();
-		verify.transactionId="N2T0127";
-		verify.amount = 150.0;
-		verify.senderId="b";
-		verify.receiverId="a";
-		verify.witnessId="c";
-		verify.inputTransactions=list;
-		verify.valid=true;
+		verify.setTransactionId("N2T127");
+		verify.setAmount(150.0);
+		verify.setSenderId("b");
+		verify.setReceiverId("a");
+		verify.setWitnessId("c");
+		verify.setInputTransactions(list);
+		verify.setValid(true);
 		
 		boolean verified=ledger.verify_transaction(verify);
 		
@@ -52,7 +53,7 @@ public class LedgerTest {
 		
 		List<Transaction> led = ledger.getLedger();
 		assertEquals(4,led.size());
-		assertEquals("N2T0128",led.get(3).getTransactionId());
+		assertEquals("N2T128",led.get(3).getTransactionId());
 	}
 
 }

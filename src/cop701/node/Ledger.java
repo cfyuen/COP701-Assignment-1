@@ -16,9 +16,9 @@ public class Ledger {
 	public boolean verify_transaction(Transaction transaction){
 		String p;
 		double calculated_amount=0;
-		String sender=transaction.senderId;
+		String sender=transaction.getSenderId();
 		boolean flag = false;
-		ListIterator<String> itr=transaction.inputTransactions.listIterator();
+		ListIterator<String> itr=transaction.getInputTransactions().listIterator();
 		while(itr.hasNext())
 		{
 			p=itr.next();
@@ -27,16 +27,16 @@ public class Ledger {
 			{
 				flag=false;
 				Transaction t=itr_ledger.next();
-				if(t.transactionId.equals(p))
+				if(t.getTransactionId().equals(p))
 				{
-					if(t.valid==true)
+					if(t.isValid())
 					{
 						
-							if(t.receiverId.equals(sender))
+							if(t.getReceiverId().equals(sender))
 							{
-								calculated_amount +=t.amount;
+								calculated_amount +=t.getAmount();
 								flag=true;
-		break;
+								break;
 							}
 							else
 							{
@@ -49,23 +49,27 @@ public class Ledger {
 			if(!flag)
 				return false; //transaction not found
 		}
-		if(calculated_amount > transaction.amount)
+
+		if(calculated_amount > transaction.getAmount())
 		{
 			addTransaction(transaction);
-			double difference=calculated_amount-transaction.amount;
+			double difference=calculated_amount-transaction.getAmount();
 			Transaction self= new Transaction();
-			int id_length=transaction.transactionId.length();
-			int transaction_number=Integer.parseInt(transaction.transactionId.substring(id_length-4));
-			self.transactionId=transaction.transactionId.substring(0,id_length-4)+(transaction_number+1);
-			self.amount=difference;
-			self.senderId=transaction.senderId;
-			self.receiverId=transaction.senderId;
-			self.witnessId=transaction.witnessId;
-			self.inputTransactions=null;
-			self.valid=true;
+			
+			String transaction_parts[]=transaction.getTransactionId().split("T");
+			int transaction_number=Integer.parseInt(transaction_parts[1]);
+			transaction_number++;
+			self.setTransactionId(transaction_parts[0]+"T"+transaction_number);
+			//int transaction_number=Integer.parseInt(transaction.getTransactionId().substring(id_length-4));
+			//self.setTransactionId(transaction.getTransactionId().substring(0,id_length-4)+(transaction_number+1));
+			self.setAmount(difference);
+			self.setSenderId(transaction.getSenderId());
+			self.setReceiverId(transaction.getSenderId());
+			self.setWitnessId(transaction.getWitnessId());
+			self.setValid(true);
 			addTransaction(self);
 		}
-		else if(calculated_amount < transaction.amount)
+		else if(calculated_amount < transaction.getAmount())
 		{
 			return false;
 		}
@@ -81,7 +85,7 @@ public class Ledger {
 	}
 	public void invalidateInputTransactions(Transaction transaction)
 	{
-		ListIterator<String> itr=transaction.inputTransactions.listIterator();
+		ListIterator<String> itr=transaction.getInputTransactions().listIterator();
 		String p;
 		while(itr.hasNext())
 		{
@@ -90,11 +94,11 @@ public class Ledger {
 			while(itr_ledger.hasNext())
 			{
 				Transaction t=itr_ledger.next();
-				if(t.transactionId.equals(p))
+				if(t.getTransactionId().equals(p))
 				{
-					if(t.valid==true)
+					if(t.isValid())
 					{
-						t.valid=false;
+						t.setValid(false);;
 					}
 				}
 			}
