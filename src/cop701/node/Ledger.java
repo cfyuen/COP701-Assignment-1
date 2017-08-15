@@ -14,6 +14,7 @@ public class Ledger {
 	}
 	
 	public boolean verify_transaction(Transaction transaction){
+		//TODO: verify if input transaction does not contain more than 1 transaction with same transaction id 
 		String p;
 		double calculated_amount=0;
 		String sender=transaction.getSenderId();
@@ -40,14 +41,22 @@ public class Ledger {
 							}
 							else
 							{
+								System.out.println(transaction.getTransactionId()+":Input transaction contains a useless Transaction");
 								return false; //useless transaction	
 							}
 					}
-					else return false; //transaction is invalid
+					else
+						{
+							System.out.println(transaction.getTransactionId()+"Input transaction contains an invalid transaction");
+							return false; //transaction is invalid
+						}
 				}
 			}
 			if(!flag)
+			{
+				System.out.println(transaction.getTransactionId()+"Transaction wasn't found in the ledger");
 				return false; //transaction not found
+			}	
 		}
 
 		if(calculated_amount > transaction.getAmount())
@@ -71,6 +80,7 @@ public class Ledger {
 		}
 		else if(calculated_amount < transaction.getAmount())
 		{
+			System.out.println(transaction.getTransactionId()+"Total amount insufficient for the transaction");
 			return false;
 		}
 		else
@@ -82,6 +92,7 @@ public class Ledger {
 	}
 	public void addTransaction(Transaction transaction){
 		ledger.add(transaction);
+		System.out.println(transaction.getTransactionId()+"Successfully Added");
 	}
 	public void invalidateInputTransactions(Transaction transaction)
 	{
