@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.logging.LogManager;
 
 import cop701.node.Client;
+import cop701.node.Transaction;
 
 public class Master {
 
@@ -52,20 +53,16 @@ public class Master {
 		}
 		
 		//clients.get(0).hello();
-		
-		for (int i=0; i<CLIENT_COUNT; i++) {
-			for (int j=0; j<CLIENT_COUNT; j++) {
-				Client otherClient = clients.get(j);
-				clients.get(i).addNodeIdentity(otherClient.getAccount(), otherClient.getAddress());
-			}
-		}
-		
+
+		addNodeIdentityMap();
+		initializeLedger();
 
 		clients.get(0).initiateTransaction(2.0,"2","3","10");
 
 	}
 	
-	public static void setup() {
+
+	private static void setup() {
 		Locale.setDefault(Locale.US);
 		try {
 			LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
@@ -81,5 +78,33 @@ public class Master {
 		}
 
 	}
+	
+	private static void addNodeIdentityMap() {
+		for (int i=0; i<CLIENT_COUNT; i++) {
+			for (int j=0; j<CLIENT_COUNT; j++) {
+				Client otherClient = clients.get(j);
+				clients.get(i).addNodeIdentity(otherClient.getAccount(), otherClient.getAddress());
+			}
+		}
+	}
+	
+	private static void initializeLedger() {
+		// Add transaction j to j 100.0 into node i's ledger
+		for (int i=0; i<CLIENT_COUNT; i++) {
+			for (int j=0; j<CLIENT_COUNT; j++) {
+				Client client = clients.get(j);
+				Transaction t = new Transaction();
+				t.setTransactionId("DummyFor" + j);
+				t.setAmount(100.0);
+				t.setSenderId(client.getAccount());
+				t.setReceiverId(client.getAccount());
+				t.setWitnessId(client.getAccount());
+				t.setValid(true);
+				
+				client.getLedger().addTransaction(t);
+			}
+		}
+	}
+		
 	
 }
