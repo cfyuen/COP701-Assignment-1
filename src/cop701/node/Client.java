@@ -1,16 +1,25 @@
 package cop701.node;
 
 import cop701.node.ClientUI;
+import cop701.pastry.Pastry;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class Client {
+	
+	private static final Logger logger = Logger.getLogger(Client.class.getName()); 
 	
 	private String accountId;
 	private Address address;
@@ -19,25 +28,38 @@ public class Client {
 	private ClientWriter clientWriter;
 	private Ledger ledger;
 	
+	private PrivateKey privateKey;
+	private PublicKey publicKey;
+	
+	private Pastry pastry;
+	
 	private Map<String, Address> nodesMap = new HashMap<String, Address>();
 	
 	/**
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
-	
 	public Client(int id, int port) throws IOException {
 		serverSocket = new ServerSocket(port);
 		this.accountId = String.valueOf(id);
 		this.address = new Address("localhost", serverSocket.getLocalPort());
 		inProgressTransactions = new ArrayList<Transaction>();
-		clientWriter = new ClientWriter(this);
 		ledger = new Ledger();
+		try {
+			generateKeyPairs();
+		} catch (NoSuchAlgorithmException e) {
+			logger.warning("Error generating public / private keys");
+			e.printStackTrace();
+		}
+		pastry = new Pastry();
 	}
 	
 	public void start() throws IOException {
 		//ClientUI cui=new ClientUI();
 		//cui.clientUI(address.getPort(),this);
+		
+		clientWriter = new ClientWriter(this);
+		
 		System.out.println("Listening on port " + address.getPort());
 		while (true) {
 			new ClientListener(this, serverSocket.accept()).run();
@@ -46,6 +68,14 @@ public class Client {
 	
 	public void stop() throws IOException {
 		serverSocket.close();
+	}
+	
+	public void generateKeyPairs() throws NoSuchAlgorithmException {
+		KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
+		kg.initialize(1024);
+		KeyPair kp = kg.generateKeyPair();
+		privateKey = kp.getPrivate();
+		publicKey = kp.getPublic();
 	}
 	
 	public void hello() {
@@ -77,6 +107,10 @@ public class Client {
 	
 	public void addNodeIdentity(String accountId, Address address) {
 		nodesMap.put(accountId, address);
+	}
+	
+	public void addPublicKey(String accountId, PublicKey pk) {
+		pastry.put(accountId, pk);
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
@@ -140,6 +174,18 @@ public class Client {
 		return ledger;
 	}
 
+	public PrivateKey getPrivateKey() {
+		return privateKey;
+	}
+	
+	public PublicKey getPublicKey() {
+		return publicKey;
+	}
+	
+	public Pastry getPastry() {
+		return pastry;
+	}
+
 	public boolean selectInputTransactions(Transaction transaction)
 	{
 		List<String> newList = new ArrayList<String>();
@@ -163,4 +209,5 @@ public class Client {
 		
 		return true;
 	}
+
 }
