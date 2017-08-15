@@ -57,7 +57,7 @@ public class Master {
 		addNodeIdentityMap();
 		initializeLedger();
 
-		clients.get(0).initiateTransaction(2.0,"2","3","10");
+		clients.get(0).initiateTransaction(2.0,"2","3","N0T50");
 
 	}
 	
@@ -94,14 +94,14 @@ public class Master {
 			for (int j=0; j<CLIENT_COUNT; j++) {
 				Client client = clients.get(j);
 				Transaction t = new Transaction();
-				t.setTransactionId("DummyFor" + j);
+				t.setTransactionId("N" + j + "T0");
 				t.setAmount(100.0);
 				t.setSenderId(client.getAccount());
 				t.setReceiverId(client.getAccount());
 				t.setWitnessId(client.getAccount());
 				t.setValid(true);
 				
-				client.getLedger().addTransaction(t);
+				clients.get(i).getLedger().addTransaction(t);
 			}
 		}
 	}

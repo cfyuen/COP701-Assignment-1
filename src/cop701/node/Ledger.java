@@ -54,7 +54,7 @@ public class Ledger {
 			}
 			if(!flag)
 			{
-				System.out.println(transaction.getTransactionId()+"Transaction wasn't found in the ledger");
+				System.out.println(transaction.getTransactionId()+" Transaction wasn't found in the ledger");
 				return false; //transaction not found
 			}	
 		}
