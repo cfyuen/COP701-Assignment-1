@@ -13,6 +13,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -92,7 +93,7 @@ public class Client {
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
-		// TODO verify transaction and add to ledger
+		this.ledger.verify_transaction(transaction);
 	}
 	
 	public void broadcast(Transaction t)
@@ -121,10 +122,17 @@ public class Client {
 		t.setReceiverId(receiverId);
 		t.setWitnessId(witnessId);
 		
-		inProgressTransactions.add(t);
+		boolean check = selectInputTransactions(t);
+		if(!check)
+			System.out.println("Transaction could not be initiated due to insufficient balance");
+		
+		else
+		{	
+			inProgressTransactions.add(t);
 	
-		clientWriter.sendObject(t.getReceiverId(), t);
-		clientWriter.sendObject(t.getWitnessId(), t);
+			clientWriter.sendObject(t.getReceiverId(), t);
+			clientWriter.sendObject(t.getWitnessId(), t);
+		}	
 	}
 	
 	public void handleTransactionResponse(TransactionResponse tr)
@@ -176,6 +184,30 @@ public class Client {
 	
 	public Pastry getPastry() {
 		return pastry;
+	}
+
+	public boolean selectInputTransactions(Transaction transaction)
+	{
+		List<String> newList = new ArrayList<String>();
+		int cal_amt=0;
+		ListIterator<Transaction> itr = this.ledger.getLedger().listIterator();
+		
+		while(itr.hasNext() && cal_amt < transaction.getAmount())
+		{
+			Transaction t = itr.next();
+			if(t.isValid() && t.getReceiverId()==this.accountId)
+			{
+				cal_amt+=t.getAmount();
+				newList.add(t.getTransactionId());
+			}
+		}
+		
+		if(cal_amt < transaction.getAmount())
+			return false;
+		else
+			transaction.setInputTransactions(newList);
+		
+		return true;
 	}
 
 }

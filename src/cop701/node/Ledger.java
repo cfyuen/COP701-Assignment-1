@@ -14,6 +14,7 @@ public class Ledger {
 	}
 	
 	public boolean verify_transaction(Transaction transaction){
+		//TODO: verify if input transaction does not contain more than 1 transaction with same transaction id 
 		String p;
 		double calculated_amount=0;
 		String sender=transaction.getSenderId();
@@ -40,23 +41,36 @@ public class Ledger {
 							}
 							else
 							{
+								System.out.println(transaction.getTransactionId()+":Input transaction contains a useless Transaction");
 								return false; //useless transaction	
 							}
 					}
-					else return false; //transaction is invalid
+					else
+						{
+							System.out.println(transaction.getTransactionId()+"Input transaction contains an invalid transaction");
+							return false; //transaction is invalid
+						}
 				}
 			}
 			if(!flag)
+			{
+				System.out.println(transaction.getTransactionId()+"Transaction wasn't found in the ledger");
 				return false; //transaction not found
+			}	
 		}
-		if(calculated_amount >= transaction.getAmount())
+
+		if(calculated_amount > transaction.getAmount())
 		{
 			addTransaction(transaction);
 			double difference=calculated_amount-transaction.getAmount();
 			Transaction self= new Transaction();
-			int id_length=transaction.getTransactionId().length();
-			int transaction_number=Integer.parseInt(transaction.getTransactionId().substring(id_length-4));
-			self.setTransactionId(transaction.getTransactionId().substring(0,id_length-4)+(transaction_number+1));
+			
+			String transaction_parts[]=transaction.getTransactionId().split("T");
+			int transaction_number=Integer.parseInt(transaction_parts[1]);
+			transaction_number++;
+			self.setTransactionId(transaction_parts[0]+"T"+transaction_number);
+			//int transaction_number=Integer.parseInt(transaction.getTransactionId().substring(id_length-4));
+			//self.setTransactionId(transaction.getTransactionId().substring(0,id_length-4)+(transaction_number+1));
 			self.setAmount(difference);
 			self.setSenderId(transaction.getSenderId());
 			self.setReceiverId(transaction.getSenderId());
@@ -64,11 +78,21 @@ public class Ledger {
 			self.setValid(true);
 			addTransaction(self);
 		}
+		else if(calculated_amount < transaction.getAmount())
+		{
+			System.out.println(transaction.getTransactionId()+"Total amount insufficient for the transaction");
+			return false;
+		}
+		else
+		{
+			addTransaction(transaction);
+		}
 		invalidateInputTransactions(transaction);
 		return true;
 	}
 	public void addTransaction(Transaction transaction){
 		ledger.add(transaction);
+		System.out.println(transaction.getTransactionId()+"Successfully Added");
 	}
 	public void invalidateInputTransactions(Transaction transaction)
 	{
