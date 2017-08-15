@@ -13,13 +13,12 @@ public class LedgerTest {
 		Ledger ledger = new Ledger();
 		
 		Transaction self = new Transaction();
-		self.transactionId="123";
-		self.amount = 100.0;
-		self.senderId="a";
-		self.receiverId="b";
-		self.witnessId="c";
-		self.inputTransactions=null;
-		self.valid=true;
+		self.setTransactionId("123");
+		self.setAmount(100.0);
+		self.setSenderId("a");
+		self.setReceiverId("b");
+		self.setWitnessId("c");
+		self.setValid(true);
 		
 		ledger.addTransaction(self);
 		

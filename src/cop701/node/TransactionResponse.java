@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class TransactionResponse implements Serializable {
 	
 	private static final long serialVersionUID = 8758973589641525319L;
-	String transactionId;
-	boolean transactionValid;
+	private String transactionId;
+	private boolean transactionValid;
 	
 	public String getTransactionId() {
 		return transactionId;
