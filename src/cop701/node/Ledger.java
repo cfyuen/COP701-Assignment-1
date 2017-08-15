@@ -49,7 +49,7 @@ public class Ledger {
 			if(!flag)
 				return false; //transaction not found
 		}
-		if(calculated_amount >= transaction.amount)
+		if(calculated_amount > transaction.amount)
 		{
 			addTransaction(transaction);
 			double difference=calculated_amount-transaction.amount;
@@ -64,6 +64,14 @@ public class Ledger {
 			self.inputTransactions=null;
 			self.valid=true;
 			addTransaction(self);
+		}
+		else if(calculated_amount < transaction.amount)
+		{
+			return false;
+		}
+		else
+		{
+			addTransaction(transaction);
 		}
 		invalidateInputTransactions(transaction);
 		return true;
