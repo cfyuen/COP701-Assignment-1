@@ -63,7 +63,7 @@ public class Client {
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
-		// TODO verify transaction and add to ledger
+		this.ledger.verify_transaction(transaction);
 	}
 	
 	public void broadcast(Transaction t)
