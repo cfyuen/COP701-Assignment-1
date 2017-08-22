@@ -3,6 +3,8 @@ package cop701.node;
 import cop701.node.ClientUI;
 import cop701.pastry.Pastry;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -15,7 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Client {
@@ -55,13 +59,38 @@ public class Client {
 		pastry = new Pastry(accountId);
 	}
 	
+	public static void main(String[] args) throws IOException {
+		setup();
+		
+		String id = args[0];
+		Client client = new Client(id);
+		client.start();
+	}
+	
+	private static void setup() {
+		Locale.setDefault(Locale.US);
+		try {
+			LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
 	public void start() throws IOException {
 		//ClientUI cui=new ClientUI();
 		//cui.clientUI(address.getPort(),this);
 		
 		clientWriter = new ClientWriter(this);
 		
-		System.out.println("Listening on port " + address.getPort());
+		System.out.println("[" + accountId + "] Listening on " + address.toString());
 		while (true) {
 			new ClientListener(this, serverSocket.accept()).run();
 		}
