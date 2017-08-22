@@ -1,8 +1,8 @@
-package cop701.node;
+package cop701.common;
 
 import java.io.Serializable;
 
-public abstract class BaseTransaction implements Serializable {
+public abstract class BaseMessage implements Serializable {
 
 	/**
 	 * 

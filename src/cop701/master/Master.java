@@ -32,7 +32,7 @@ public class Master {
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
 			try {
-				Client client = new Client(i, 0);
+				Client client = new Client(String.valueOf(i));
 				clients.add(client);
 				
 				new Thread(new Runnable() {

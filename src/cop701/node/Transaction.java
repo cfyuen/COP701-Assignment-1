@@ -2,8 +2,10 @@ package cop701.node;
 
 import java.util.List;
 
+import cop701.common.BaseMessage;
 
-public class Transaction extends BaseTransaction {
+
+public class Transaction extends BaseMessage {
 	
 	/**
 	 * This is the transaction object used in Socket transfer

@@ -4,6 +4,7 @@ import cop701.node.ClientUI;
 import cop701.pastry.Pastry;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -39,10 +40,10 @@ public class Client {
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
-	public Client(int id, int port) throws IOException {
-		serverSocket = new ServerSocket(port);
-		this.accountId = String.valueOf(id);
-		this.address = new Address("localhost", serverSocket.getLocalPort());
+	public Client(String id) throws IOException {
+		serverSocket = new ServerSocket(0);
+		this.accountId = id;
+		this.address = new Address(InetAddress.getLocalHost(), serverSocket.getLocalPort());
 		inProgressTransactions = new ArrayList<Transaction>();
 		ledger = new Ledger();
 		try {
@@ -51,7 +52,7 @@ public class Client {
 			logger.warning("Error generating public / private keys");
 			e.printStackTrace();
 		}
-		pastry = new Pastry();
+		pastry = new Pastry(accountId);
 	}
 	
 	public void start() throws IOException {

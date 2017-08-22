@@ -11,7 +11,7 @@ public class ClientTest {
 	@Test
 	public void test_valid_input_transaction() throws IOException {
 		
-		Client client = new Client(0,0);
+		Client client = new Client("0");
 		for(int i=1;i<=10;++i)
 		{
 			Transaction t = new Transaction();
@@ -46,7 +46,7 @@ public class ClientTest {
 
 public void test_invalid_input_transaction() throws IOException {
 		
-		Client client = new Client(0,0);
+		Client client = new Client("0");
 		for(int i=1;i<=10;++i)
 		{
 			Transaction t = new Transaction();

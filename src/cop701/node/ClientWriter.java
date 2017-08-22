@@ -11,6 +11,8 @@ import java.security.SignatureException;
 import java.security.SignedObject;
 import java.util.logging.Logger;
 
+import cop701.common.BaseMessage;
+
 public class ClientWriter {
 
 	private static final Logger logger = Logger.getLogger(ClientWriter.class.getName()); 
@@ -21,7 +23,7 @@ public class ClientWriter {
 		this.client = client;
 	}
 	
-	public void sendObject(String recipient, BaseTransaction obj) {
+	public void sendObject(String recipient, BaseMessage obj) {
 		Socket recipientSocket;
 		ObjectOutputStream outputStream;
 		try {

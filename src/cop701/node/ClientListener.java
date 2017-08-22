@@ -12,6 +12,8 @@ import java.security.SignatureException;
 import java.security.SignedObject;
 import java.util.logging.Logger;
 
+import cop701.common.BaseMessage;
+
 public class ClientListener extends Thread {
 	
 	private static final Logger logger = Logger.getLogger(ClientListener.class.getName()); 
@@ -82,8 +84,8 @@ public class ClientListener extends Thread {
 		if (inObject instanceof SignedObject) {
 			SignedObject so = (SignedObject)inObject;
 			Object o = so.getObject();
-			if (o instanceof BaseTransaction) {
-				return ((BaseTransaction)o).getOriginAccountId();
+			if (o instanceof BaseMessage) {
+				return ((BaseMessage)o).getOriginAccountId();
 			}
 		}
 		return "";

@@ -1,7 +1,8 @@
 package cop701.node;
 
+import cop701.common.BaseMessage;
 
-public class TransactionResponse extends BaseTransaction {
+public class TransactionResponse extends BaseMessage {
 	
 	/**
 	 * 
