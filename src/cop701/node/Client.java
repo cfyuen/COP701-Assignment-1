@@ -52,7 +52,19 @@ public class Client {
 			logger.warning("Error generating public / private keys");
 			e.printStackTrace();
 		}
-		pastry = new Pastry(accountId);
+	
+		pastry = new Pastry(accountId,nodesMap);
+		
+		new Thread(new Runnable() {
+			   public void run() {
+			       try {
+					pastry.start();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			   }
+			}).start();		
 	}
 	
 	public void start() throws IOException {

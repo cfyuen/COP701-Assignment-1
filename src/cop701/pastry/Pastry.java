@@ -1,11 +1,16 @@
 package cop701.pastry;
 
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import cop701.node.Address;
+
 
 public class Pastry {
 
@@ -22,16 +27,24 @@ public class Pastry {
 	private Map<String, PublicKey> pkMap;
 	
 	private String accountId;
+	private Map<String,Address> nodesMap;
+	private ServerSocket serverSocket;
 	
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	
-	public Pastry(String accountId) {
+	private PastryWriter pastryWriter;
+	
+	public Pastry(String accountId, Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
+		pastryWriter=new PastryWriter(this);
 		
 		this.accountId = accountId;
+		this.nodesMap = nodesMap;
+		serverSocket = new ServerSocket(0);
+		
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
@@ -62,10 +75,17 @@ public class Pastry {
 			return getRemote(route, key);
 		}
 		else {
-			// FIXME implement according to spec
+			// FIXME implement according to specifications
 			logger.warning("Going into the rare case");
-			for (String neighbor : neighborhoodSet) {
-				return getRemote(neighbor,key);
+			for (int i=l; i<L; ++i) {
+				 for(int j=Integer.valueOf(key.charAt(l))+1; j<Math.pow(2, B); ++j)
+					 if(routingTable[i][j]!=null)
+					 {
+						 //return .get(key);
+						 String nextAccountId = routingTable[i][j];
+						 pastryWriter.sendKey(nodesMap.get(nextAccountId),key);
+					 }
+						 
 			}
 		}
 		logger.warning("Should not reach here");
@@ -92,6 +112,17 @@ public class Pastry {
 			if (a.charAt(i) != b.charAt(i))
 				return i;
 		return a.length();
+	}
+
+	public void start() throws IOException {
+		
+		pastryWriter = new PastryWriter(this);
+		
+		System.out.println("Listening on port " + nodesMap.get(accountId).getPort());
+		while (true) {
+			new PastryListener(this, serverSocket.accept()).run();
+		} 
+		
 	}
 	
 }
