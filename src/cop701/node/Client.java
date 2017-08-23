@@ -1,12 +1,10 @@
 package cop701.node;
 
+import cop701.common.Util;
 import cop701.node.ClientUI;
 import cop701.pastry.Pastry;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -45,9 +43,12 @@ public class Client {
 	 * @throws IOException 
 	 */
 	public Client(String id) throws IOException {
-		serverSocket = new ServerSocket(0);
+		serverSocket = new ServerSocket(42000);
 		this.accountId = id;
-		this.address = new Address(InetAddress.getLocalHost(), serverSocket.getLocalPort());
+		
+		String ipAddr = Util.getIpAddress();
+		this.address = new Address(ipAddr, serverSocket.getLocalPort());
+		
 		inProgressTransactions = new ArrayList<Transaction>();
 		ledger = new Ledger();
 		try {
@@ -69,8 +70,11 @@ public class Client {
 	
 	private static void setup() {
 		Locale.setDefault(Locale.US);
+		/*
 		try {
-			LogManager.getLogManager().readConfiguration(new FileInputStream("logging.properties"));
+			InputStream is = Client.class.getResourceAsStream("logging.properties");
+			is = Client.class.getResourceAsStream("ClientUI.java");
+			LogManager.getLogManager().readConfiguration(is);
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -81,6 +85,7 @@ public class Client {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		*/
 
 	}
 	
