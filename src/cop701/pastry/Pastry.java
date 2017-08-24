@@ -39,7 +39,6 @@ public class Pastry {
 	
 	public Pastry(String accountId, Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
-		pastryWriter=new PastryWriter(this);
 		
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
@@ -51,39 +50,40 @@ public class Pastry {
 		rightLeafSet = new ArrayList<String>();
 	}
 	
-	public PublicKey get(String key) {
+	public PublicKey get(String senderId, String queryAccountId) {
 		// 0. Check if key is the node itself
-		if (key.equals(accountId)) {
-			return pkMap.get(key);
+		if (queryAccountId.equals(accountId)) {
+			return pkMap.get(queryAccountId);
 		}
 		// 1. Iterate leaf set
 		// TODO need checking
 		for (String leaf : leftLeafSet) {
-			if (key.equals(leaf)) {
-				return getRemote(leaf, key);
+			if (queryAccountId.equals(leaf)) {
+				return getRemote(leaf,queryAccountId);
 			}
 		}
 		for (String leaf : rightLeafSet) {
-			if (key.equals(leaf)) {
-				return getRemote(leaf, key);
+			if (queryAccountId.equals(leaf)) {
+				return getRemote(leaf,queryAccountId);
 			}
 		}
 		// 2. Find in routing table
-		int l = longestPrefix(key, accountId);
-		String route = routingTable[l][Integer.valueOf(key.charAt(l))];
+		int l = longestPrefix(queryAccountId,accountId);
+		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l))];
 		if (!(route == null)) {
-			return getRemote(route, key);
+			return getRemote(route, queryAccountId);
 		}
 		else {
 			// FIXME implement according to specifications
 			logger.warning("Going into the rare case");
 			for (int i=l; i<L; ++i) {
-				 for(int j=Integer.valueOf(key.charAt(l))+1; j<Math.pow(2, B); ++j)
+				 for(int j=Integer.valueOf(queryAccountId.charAt(l))+1; j<Math.pow(2, B); ++j)
 					 if(routingTable[i][j]!=null)
 					 {
 						 //return .get(key);
 						 String nextAccountId = routingTable[i][j];
-						 pastryWriter.sendKey(nodesMap.get(nextAccountId),key);
+						 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
+						 pastryWriter.sendKey(m);
 					 }
 						 
 			}
@@ -92,14 +92,14 @@ public class Pastry {
 		return null;
 	}
 	
-	public PublicKey getRemote(String dest, String key) {
+	public PublicKey getRemote(String dest, String queryAccountId) {
 		// TODO route to remote host for public key
 		return null;
 	}
 	
 	// Legacy method
-	public PublicKey getOld(String key) {
-		return pkMap.get(key);
+	public PublicKey getOld(String queryAccountId) {
+		return pkMap.get(queryAccountId);
 	}
 	
 	public void put(String key, PublicKey value) {
@@ -116,7 +116,7 @@ public class Pastry {
 
 	public void start() throws IOException {
 		
-		pastryWriter = new PastryWriter(this);
+		pastryWriter = new PastryWriter();
 		
 		System.out.println("Listening on port " + nodesMap.get(accountId).getPort());
 		while (true) {

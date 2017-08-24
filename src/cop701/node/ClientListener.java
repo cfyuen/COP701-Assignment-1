@@ -69,7 +69,7 @@ public class ClientListener extends Thread {
 		} catch (ClassNotFoundException | IOException e1) {
 			e1.printStackTrace();
 		}
-		PublicKey publicKey = getPublicKeyFromPastry(originAccountId);
+		PublicKey publicKey = getPublicKeyFromPastry(this.client.getAccount(),originAccountId);
 		Object verifiedObject = null;
 		try {
 			verifiedObject = verifySignature(inObject, publicKey);
@@ -109,8 +109,8 @@ public class ClientListener extends Thread {
 		}
 	}
 	
-	public PublicKey getPublicKeyFromPastry(String accountId) {
-		return client.getPastry().get(accountId);
+	public PublicKey getPublicKeyFromPastry(String senderId, String accountId) {
+		return client.getPastry().get(senderId,accountId);
 	}
 	
 }

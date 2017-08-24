@@ -1,10 +1,10 @@
 package cop701.pastry;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.logging.Logger;
+
 
 
 
@@ -22,18 +22,24 @@ public class PastryListener {
 
 	public void run() {
 		
-		String s = null;
+		Object inObject = null;
 		
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			s = in.readLine();	
-		} 
-		catch (IOException e) {
+			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+			inObject = in.readObject();
+			
+		} catch (IOException e) {
 			System.out.println("Error in reading object from input stream");
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		
-		System.out.println(s);
+		if (inObject instanceof Message) {
+			Message m = (Message)inObject;
+			logger.info("Pastry message received");
+			this.pastry.get(m.getSenderId(),m.getQueryAccountId());
+		}
 		
 	}
 

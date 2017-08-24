@@ -1,32 +1,28 @@
 package cop701.pastry;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Logger;
 
-import cop701.node.Address;
+
 import cop701.node.ClientWriter;
 
 public class PastryWriter {
 	
 	private static final Logger logger = Logger.getLogger(ClientWriter.class.getName());
 	
-	private Pastry pastry;
-	
-	public PastryWriter(Pastry pastry)
-	{
-		this.pastry = pastry;
+	public PastryWriter() {
 	}
 
-	public void sendKey(Address address, String key) {
+	public void sendKey(Message m) {
 		Socket recipientSocket;
-		PrintWriter out;
+		ObjectOutputStream outputStream;
 		
 		try {
-			recipientSocket = new Socket(address.getIp(),address.getPort());
-			out = new PrintWriter(recipientSocket.getOutputStream(),true);
-			out.println(key);
+			recipientSocket = new Socket(m.getAddress().getIp(),m.getAddress().getPort());
+			outputStream = new ObjectOutputStream(recipientSocket.getOutputStream());
+			outputStream.writeObject(m);
 			recipientSocket.close();
 		}
 		catch (IOException e) {
