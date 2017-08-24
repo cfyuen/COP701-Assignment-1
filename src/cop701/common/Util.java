@@ -34,4 +34,14 @@ public class Util {
 		return ipAddr;
 	}
 	
+	public static String generateAccountId(int b, int l, String ip) {
+		String[] ipSplit = ip.split("\\.");
+		Integer hash = Integer.valueOf(ipSplit[1])*256*256 + Integer.valueOf(ipSplit[2])*256 + Integer.valueOf(ipSplit[3]);
+		String baseB = Integer.toString(hash, b);
+		while (baseB.length() < l) {
+			baseB = "0" + baseB;
+		}
+		return baseB.substring(baseB.length() - l); 
+	}
+	
 }

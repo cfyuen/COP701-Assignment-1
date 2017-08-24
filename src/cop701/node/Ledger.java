@@ -13,7 +13,7 @@ public class Ledger {
 		ledger= new ArrayList<Transaction>();
 	}
 	
-	public boolean verify_transaction(Transaction transaction){
+	public boolean verifyTransaction(Transaction transaction){
 		//TODO: verify if input transaction does not contain more than 1 transaction with same transaction id 
 		String p;
 		double calculated_amount=0;
@@ -90,10 +90,12 @@ public class Ledger {
 		invalidateInputTransactions(transaction);
 		return true;
 	}
+	
 	public void addTransaction(Transaction transaction){
 		ledger.add(transaction);
 		System.out.println(transaction.getTransactionId()+"Successfully Added");
 	}
+	
 	public void invalidateInputTransactions(Transaction transaction)
 	{
 		ListIterator<String> itr=transaction.getInputTransactions().listIterator();
@@ -115,6 +117,18 @@ public class Ledger {
 			}
 		}
 	}
+	
+	public double getTotalAmountOf(String accountId) {
+		Double amount = 0.0;
+		ListIterator<Transaction> itr_ledger=ledger.listIterator();
+		while(itr_ledger.hasNext()) {
+			Transaction t=itr_ledger.next();
+			if(t.isValid() && t.getReceiverId().equals(accountId))
+				amount +=t.getAmount();
+		}
+		return amount;
+	}
+	
 	public List<Transaction> getLedger() {
 		return ledger;
 	}

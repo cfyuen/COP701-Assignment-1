@@ -28,6 +28,7 @@ public class Client {
 	private Address address;
 	private ServerSocket serverSocket;
 	private List<Transaction> inProgressTransactions;
+	private Integer transactionCounter;
 	private ClientWriter clientWriter;
 	private Ledger ledger;
 	
@@ -42,14 +43,25 @@ public class Client {
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
+	public Client() throws IOException {
+		this(null, null);
+	}
+	
 	public Client(String id) throws IOException {
+		this(id, null);
+	}
+	
+	public Client(String id, String ip) throws IOException {
 		serverSocket = new ServerSocket(42000);
-		this.accountId = id;
 		
-		String ipAddr = Util.getIpAddress();
-		this.address = new Address(ipAddr, serverSocket.getLocalPort());
+		if (ip == null) ip = Util.getIpAddress();
+		if (id == null) this.accountId = Util.generateAccountId((int)Math.pow(2, Pastry.B), Pastry.L, ip);
+		else this.accountId = id;
+			
+		this.address = new Address(ip, serverSocket.getLocalPort());
 		
 		inProgressTransactions = new ArrayList<Transaction>();
+		transactionCounter = 0;
 		ledger = new Ledger();
 		try {
 			generateKeyPairs();
@@ -63,8 +75,7 @@ public class Client {
 	public static void main(String[] args) throws IOException {
 		setup();
 		
-		String id = args[0];
-		Client client = new Client(id);
+		Client client = new Client();
 		client.start();
 	}
 	
@@ -94,6 +105,13 @@ public class Client {
 		//cui.clientUI(address.getPort(),this);
 		
 		clientWriter = new ClientWriter(this);
+		
+		ClientController clientController = new ClientController(this);
+		new Thread(new Runnable() {
+			   public void run() {
+			       clientController.start();
+			   }
+			}).start();
 		
 		System.out.println("[" + accountId + "] Listening on " + address.toString());
 		while (true) {
@@ -128,7 +146,7 @@ public class Client {
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
-		this.ledger.verify_transaction(transaction);
+		this.ledger.verifyTransaction(transaction);
 	}
 	
 	public void broadcast(Transaction t)
@@ -146,6 +164,12 @@ public class Client {
 	
 	public void addPublicKey(String accountId, PublicKey pk) {
 		pastry.put(accountId, pk);
+	}
+	
+	public void initiateTransaction(double amount, String receiverId, String witnessId) {
+		String transactionId = "N" + receiverId + "T" + String.valueOf(transactionCounter);
+		transactionCounter += 2;
+		initiateTransaction(amount, receiverId, witnessId, transactionId);
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
@@ -168,6 +192,10 @@ public class Client {
 			clientWriter.sendObject(t.getReceiverId(), t);
 			clientWriter.sendObject(t.getWitnessId(), t);
 		}	
+	}
+
+	public double getTotalAmountOf(String accountId) {
+		return ledger.getTotalAmountOf(accountId);		
 	}
 	
 	public void handleTransactionResponse(TransactionResponse tr)
