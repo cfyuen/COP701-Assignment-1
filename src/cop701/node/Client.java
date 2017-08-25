@@ -7,8 +7,6 @@ import cop701.pastry.Pastry;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -22,7 +20,9 @@ import java.util.logging.Logger;
 
 public class Client {
 	
-	private static final Logger logger = Logger.getLogger(Client.class.getName()); 
+	private static final Logger logger = Logger.getLogger(Client.class.getName());
+	
+	public static final int LISTENER_PORT = 42000;
 	
 	private String accountId;
 	private Address address;
@@ -43,7 +43,7 @@ public class Client {
 	 * @throws IOException 
 	 */
 	public Client(String id) throws IOException {
-		serverSocket = new ServerSocket(42000);
+		serverSocket = new ServerSocket(LISTENER_PORT);
 		this.accountId = id;
 		
 		String ipAddr = Util.getIpAddress();
@@ -51,14 +51,13 @@ public class Client {
 		nodesMap.put(id, address);
 		inProgressTransactions = new ArrayList<Transaction>();
 		ledger = new Ledger();
-		try {
-			generateKeyPairs();
-		} catch (NoSuchAlgorithmException e) {
-			logger.warning("Error generating public / private keys");
-			e.printStackTrace();
-		}
+
+		KeyPair kp = Util.generateKeyPairs();
+		privateKey = kp.getPrivate();
+		publicKey = kp.getPublic();
 	
 		pastry = new Pastry(accountId,nodesMap);
+		pastry.nodeInitialization();
 		
 		new Thread(new Runnable() {
 			   public void run() {
@@ -115,14 +114,6 @@ public class Client {
 	
 	public void stop() throws IOException {
 		serverSocket.close();
-	}
-	
-	public void generateKeyPairs() throws NoSuchAlgorithmException {
-		KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
-		kg.initialize(1024);
-		KeyPair kp = kg.generateKeyPair();
-		privateKey = kp.getPrivate();
-		publicKey = kp.getPublic();
 	}
 	
 	public void hello() {

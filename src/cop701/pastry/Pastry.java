@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import cop701.common.Util;
 import cop701.node.Address;
-import cop701.node.Client;
 
 public class Pastry {
 
@@ -31,7 +29,6 @@ public class Pastry {
 	
 	private String accountId;
 	private Map<String,Address> nodesMap;
-	private ServerSocket serverSocket;
 	
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
@@ -43,12 +40,10 @@ public class Pastry {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
-		serverSocket = new ServerSocket(0);
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
-		nodeInitialization(accountId,nodesMap);
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
@@ -57,7 +52,6 @@ public class Pastry {
 			return pkMap.get(queryAccountId);
 		}
 		// 1. Iterate leaf set
-		// TODO need checking
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
 				return pkMap.get(leaf);
@@ -112,16 +106,10 @@ public class Pastry {
 	}
 
 	public void start() throws IOException {
-		
 		pastryWriter = new PastryWriter();
-		
-		System.out.println("Listening on port " + nodesMap.get(accountId).getPort());
-		while (true) {
-			new PastryListener(this, serverSocket.accept()).run();
-		} 
-		
 	}
-	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
+	
+	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
 		if(!(address.getIp().equals("10.10.15.1")))
@@ -148,6 +136,46 @@ public class Pastry {
 		{
 			
 		}
+	}
+
+	public Map<String, PublicKey> getPkMap() {
+		return pkMap;
+	}
+
+	public void setPkMap(Map<String, PublicKey> pkMap) {
+		this.pkMap = pkMap;
+	}
+
+	public String[][] getRoutingTable() {
+		return routingTable;
+	}
+
+	public void setRoutingTable(String[][] routingTable) {
+		this.routingTable = routingTable;
+	}
+
+	public List<String> getNeighborhoodSet() {
+		return neighborhoodSet;
+	}
+
+	public void setNeighborhoodSet(List<String> neighborhoodSet) {
+		this.neighborhoodSet = neighborhoodSet;
+	}
+
+	public List<String> getLeftLeafSet() {
+		return leftLeafSet;
+	}
+
+	public void setLeftLeafSet(List<String> leftLeafSet) {
+		this.leftLeafSet = leftLeafSet;
+	}
+
+	public List<String> getRightLeafSet() {
+		return rightLeafSet;
+	}
+
+	public void setRightLeafSet(List<String> rightLeafSet) {
+		this.rightLeafSet = rightLeafSet;
 	}
 	
 }
