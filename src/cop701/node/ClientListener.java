@@ -10,9 +10,11 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.SignedObject;
+import java.util.List;
 import java.util.logging.Logger;
 
 import cop701.common.BaseMessage;
+import cop701.pastry.Message;
 
 public class ClientListener extends Thread {
 	
@@ -20,27 +22,38 @@ public class ClientListener extends Thread {
 	
 	private Client client;
 	private Socket socket; 
+	private List<Object> inProgressMessage;
 	
 	public ClientListener(Client client, Socket socket) {
 		this.client = client;
 		this.socket = socket;
+		
 	}
 	
 	public void run() {
 		logger.info("Client connected on " + socket.getLocalPort());
 		
-		Object verifiedObject = null;
+		Object verifiedObject = null, inObject = null;
 		
 		try {
 			ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-			Object inObject = in.readObject();
-			// This method will check digital signature
-			verifiedObject = decodeAndVerify(inObject);
+			inObject = in.readObject();
+			inProgressMessage.add(inObject);
+			
 		} catch (IOException e) {
 			System.out.println("Error in reading object from input stream");
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		}
+		if(inObject instanceof Message)
+		{
+			this.client.getPastry().getPastryListener().doStuff((Message)inObject);
+		}
+		else
+		{
+			// This method will check digital signature
+			verifiedObject = decodeAndVerify(inObject);
 		}
 		
 		if (verifiedObject instanceof Transaction) {

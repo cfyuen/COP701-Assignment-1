@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import cop701.common.Util;
 import cop701.node.Address;
-import cop701.node.Client;
 
 public class Pastry {
 
@@ -38,6 +36,7 @@ public class Pastry {
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	private PastryWriter pastryWriter;
+	private PastryListener pastryListener;
 	
 	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
@@ -49,23 +48,24 @@ public class Pastry {
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
 		nodeInitialization(accountId,nodesMap);
+		pastryListener = new PastryListener();
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
 		// 0. Check if key is the node itself
 		if (queryAccountId.equals(accountId)) {
-			return pkMap.get(queryAccountId);
+			sendKey(senderId,pkMap.get(accountId));
 		}
 		// 1. Iterate leaf set
 		// TODO need checking
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return pkMap.get(leaf);
+				sendKey(senderId,pkMap.get(leaf));
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return pkMap.get(leaf);
+				sendKey(senderId,pkMap.get(leaf));
 			}
 		}
 		// 2. Find in routing table
@@ -91,7 +91,14 @@ public class Pastry {
 	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
 		
 		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
-		 pastryWriter.sendKey(m);
+		 pastryWriter.forwardMessage(m);
+	}
+	
+	public void sendKey(String senderId, PublicKey pk)
+	{
+		Message m = new Message(senderId,nodesMap.get(senderId),null);
+		m.setPk(pk);
+		pastryWriter.forwardMessage(m);
 	}
 	
 	// Legacy method
@@ -111,16 +118,6 @@ public class Pastry {
 		return a.length();
 	}
 
-	public void start() throws IOException {
-		
-		pastryWriter = new PastryWriter();
-		
-		System.out.println("Listening on port " + nodesMap.get(accountId).getPort());
-		while (true) {
-			new PastryListener(this, serverSocket.accept()).run();
-		} 
-		
-	}
 	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
@@ -148,6 +145,10 @@ public class Pastry {
 		{
 			
 		}
+	}
+
+	public PastryListener getPastryListener() {
+		return pastryListener;
 	}
 	
 }

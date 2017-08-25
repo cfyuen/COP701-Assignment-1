@@ -3,6 +3,7 @@ package cop701.pastry;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.logging.Logger;
 
 
@@ -15,7 +16,7 @@ public class PastryWriter {
 	public PastryWriter() {
 	}
 
-	public void sendKey(Message m) {
+	public void forwardMessage(Message m) {
 		Socket recipientSocket;
 		ObjectOutputStream outputStream;
 		
@@ -30,4 +31,5 @@ public class PastryWriter {
 			e.printStackTrace();
 		}
 	}
+	
 }
