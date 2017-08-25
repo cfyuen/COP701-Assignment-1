@@ -60,32 +60,27 @@ public class Pastry {
 		// TODO need checking
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return getRemote(leaf,queryAccountId);
+				return pkMap.get(leaf);
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return getRemote(leaf,queryAccountId);
+				return pkMap.get(leaf);
 			}
 		}
 		// 2. Find in routing table
 		int l = longestPrefix(queryAccountId,accountId);
-		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l))];
-		if (!(route == null)) {
-			return getRemote(route, queryAccountId);
-		}
+		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l)-'0')];
+		if (!(route == null))
+			getRemote(senderId,route,queryAccountId);
+		
 		else {
 			// FIXME implement according to specifications
 			logger.warning("Going into the rare case");
 			for (int i=l; i<L; ++i) {
-				 for(int j=Integer.valueOf(queryAccountId.charAt(l))+1; j<Math.pow(2, B); ++j)
+				 for(int j=Integer.valueOf(queryAccountId.charAt(l)-'0')+1; j<Math.pow(2, B); ++j)
 					 if(routingTable[i][j]!=null)
-					 {
-						 //return .get(key);
-						 String nextAccountId = routingTable[i][j];
-						 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
-						 pastryWriter.sendKey(m);
-					 }
+						 getRemote(senderId,routingTable[i][j],queryAccountId);
 						 
 			}
 		}
@@ -93,9 +88,10 @@ public class Pastry {
 		return null;
 	}
 	
-	public PublicKey getRemote(String dest, String queryAccountId) {
-		// TODO route to remote host for public key
-		return null;
+	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
+		
+		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
+		 pastryWriter.sendKey(m);
 	}
 	
 	// Legacy method
