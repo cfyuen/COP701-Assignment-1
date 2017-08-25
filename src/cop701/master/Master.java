@@ -3,12 +3,14 @@ package cop701.master;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.LogManager;
 
+import cop701.node.Address;
 import cop701.node.Client;
 import cop701.node.Transaction;
 
@@ -32,7 +34,10 @@ public class Master {
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
 			try {
-				Client client = new Client("000" + String.valueOf(i));
+				int port = 0;
+				if (i == 0) port = 42000;
+				String ip = InetAddress.getLocalHost().getHostAddress();
+				Client client = new Client("000" + String.valueOf(i+1), ip, port);
 				clients.add(client);
 				
 				new Thread(new Runnable() {
@@ -46,6 +51,19 @@ public class Master {
 					   }
 					}).start();
 				
+				if (i == 0) {
+					client.setBootstrapAddress(new Address(ip, port));
+				}
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+				
 			} catch (IOException e) {
 				System.err.println("There is an exception of starting client");
 				e.printStackTrace();
@@ -54,10 +72,10 @@ public class Master {
 		
 		//clients.get(0).hello();
 
-		addNodeIdentityMap();
-		initializeLedger();
+		//addNodeIdentityMap();
+		//initializeLedger();
 
-		clients.get(0).initiateTransaction(2.0,"0002","0003","N0000T50");
+		clients.get(0).initiateTransaction(2.0,"0002","0003");
 
 
 	}

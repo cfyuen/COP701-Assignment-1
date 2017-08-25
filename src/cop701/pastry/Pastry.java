@@ -36,6 +36,8 @@ public class Pastry {
 	private List<String> rightLeafSet;
 	private PastryWriter pastryWriter;
 	
+	private Address bootstrapAddress = new Address("10.0.0.1",42000);
+	
 	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
@@ -117,9 +119,8 @@ public class Pastry {
 	{
 		Address address=nodesMap.get(accountId);
 		System.out.println(address.toString());
-		if(!(address.getIp().equals("10.0.0.1")))
+		if(!(address.equals(bootstrapAddress)))
 		{
-			Address bootstrapAddress=new Address("10.0.0.1",42000);
 			Message message=new Message(accountId,bootstrapAddress,null);
 			message.setMessageType(1);
 			message.setNodesMap(nodesMap);
@@ -204,6 +205,10 @@ public class Pastry {
 
 	public void setRightLeafSet(List<String> rightLeafSet) {
 		this.rightLeafSet = rightLeafSet;
+	}
+	
+	public void setBootstrapAddress(Address bootstrapAddress) {
+		this.bootstrapAddress = bootstrapAddress;
 	}
 	
 }
