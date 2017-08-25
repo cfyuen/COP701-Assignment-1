@@ -32,7 +32,7 @@ public class Master {
 		
 		for (int i=0; i<CLIENT_COUNT; i++) {
 			try {
-				Client client = new Client(String.valueOf(i));
+				Client client = new Client("000" + String.valueOf(i));
 				clients.add(client);
 				
 				new Thread(new Runnable() {
@@ -57,7 +57,7 @@ public class Master {
 		addNodeIdentityMap();
 		initializeLedger();
 
-		clients.get(0).initiateTransaction(2.0,"2","3","N0T50");
+		clients.get(0).initiateTransaction(2.0,"0002","0003","N0000T50");
 
 
 	}

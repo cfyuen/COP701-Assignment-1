@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import cop701.common.Util;
 import cop701.node.Address;
-import cop701.node.Client;
 
 public class Pastry {
 
@@ -23,15 +21,14 @@ public class Pastry {
 	 * Assuming there is no more than 256 nodes
 	 * Example node id = "0231", "0012"
 	 */
-	private final int B = 2; // bits every digit in node id
-	private final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
-	private final int M = 8; // number of nodes in neighborhood set
+	public static final int B = 2; // bits every digit in node id
+	public static final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
+	public static final int M = 8; // number of nodes in neighborhood set
 	
 	private Map<String, PublicKey> pkMap;
 	
 	private String accountId;
 	private Map<String,Address> nodesMap;
-	private ServerSocket serverSocket;
 	
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
@@ -43,12 +40,10 @@ public class Pastry {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
-		serverSocket = new ServerSocket(0);
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
-		nodeInitialization(accountId,nodesMap);
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
@@ -57,35 +52,29 @@ public class Pastry {
 			return pkMap.get(queryAccountId);
 		}
 		// 1. Iterate leaf set
-		// TODO need checking
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return getRemote(leaf,queryAccountId);
+				return pkMap.get(leaf);
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return getRemote(leaf,queryAccountId);
+				return pkMap.get(leaf);
 			}
 		}
 		// 2. Find in routing table
 		int l = longestPrefix(queryAccountId,accountId);
-		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l))];
-		if (!(route == null)) {
-			return getRemote(route, queryAccountId);
-		}
+		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l)-'0')];
+		if (!(route == null))
+			getRemote(senderId,route,queryAccountId);
+		
 		else {
 			// FIXME implement according to specifications
 			logger.warning("Going into the rare case");
 			for (int i=l; i<L; ++i) {
-				 for(int j=Integer.valueOf(queryAccountId.charAt(l))+1; j<Math.pow(2, B); ++j)
+				 for(int j=Integer.valueOf(queryAccountId.charAt(l)-'0')+1; j<Math.pow(2, B); ++j)
 					 if(routingTable[i][j]!=null)
-					 {
-						 //return .get(key);
-						 String nextAccountId = routingTable[i][j];
-						 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
-						 pastryWriter.sendKey(m);
-					 }
+						 getRemote(senderId,routingTable[i][j],queryAccountId);
 						 
 			}
 		}
@@ -93,9 +82,10 @@ public class Pastry {
 		return null;
 	}
 	
-	public PublicKey getRemote(String dest, String queryAccountId) {
-		// TODO route to remote host for public key
-		return null;
+	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
+		
+		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
+		 pastryWriter.sendKey(m);
 	}
 	
 	// Legacy method
@@ -116,16 +106,10 @@ public class Pastry {
 	}
 
 	public void start() throws IOException {
-		
 		pastryWriter = new PastryWriter();
-		
-		System.out.println("Listening on port " + nodesMap.get(accountId).getPort());
-		while (true) {
-			new PastryListener(this, serverSocket.accept()).run();
-		} 
-		
 	}
-	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
+	
+	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
 		if(!(address.getIp().equals("10.0.0.1")))
@@ -174,13 +158,48 @@ public class Pastry {
 		nodesMap.putAll(message.getNodesMap());
 		System.out.println(nodesMap);
 	}
-	/*public void routeToNextNode(String accountId,int i)
-	{
-		int nextMatch=accountId.charAt(i+1)-48;
-		if(routingTable[i+1][nextMatch]!=null)
-		{
-			
-		}
-	}*/
+
+
+
+	public Map<String, PublicKey> getPkMap() {
+		return pkMap;
+	}
+
+	public void setPkMap(Map<String, PublicKey> pkMap) {
+		this.pkMap = pkMap;
+	}
+
+	public String[][] getRoutingTable() {
+		return routingTable;
+	}
+
+	public void setRoutingTable(String[][] routingTable) {
+		this.routingTable = routingTable;
+	}
+
+	public List<String> getNeighborhoodSet() {
+		return neighborhoodSet;
+	}
+
+	public void setNeighborhoodSet(List<String> neighborhoodSet) {
+		this.neighborhoodSet = neighborhoodSet;
+	}
+
+	public List<String> getLeftLeafSet() {
+		return leftLeafSet;
+	}
+
+	public void setLeftLeafSet(List<String> leftLeafSet) {
+		this.leftLeafSet = leftLeafSet;
+	}
+
+	public List<String> getRightLeafSet() {
+		return rightLeafSet;
+	}
+
+	public void setRightLeafSet(List<String> rightLeafSet) {
+		this.rightLeafSet = rightLeafSet;
+	}
+	
 }
 
