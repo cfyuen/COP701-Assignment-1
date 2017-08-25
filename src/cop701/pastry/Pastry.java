@@ -21,9 +21,9 @@ public class Pastry {
 	 * Assuming there is no more than 256 nodes
 	 * Example node id = "0231", "0012"
 	 */
-	private final int B = 2; // bits every digit in node id
-	private final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
-	private final int M = 8; // number of nodes in neighborhood set
+	public static final int B = 2; // bits every digit in node id
+	public static final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
+	public static final int M = 8; // number of nodes in neighborhood set
 	
 	private Map<String, PublicKey> pkMap;
 	
