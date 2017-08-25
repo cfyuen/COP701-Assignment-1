@@ -128,31 +128,59 @@ public class Pastry {
 	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
-		if(!(address.getIp().equals("10.10.15.1")))
+		if(!(address.getIp().equals("10.0.0.1")))
 		{
-			//pastryWriter.write
-			
-			
-			
-		}
-		else
-		{
-			//TODO getPastryObject
-			
-			
-			
-			
-			
+			Address bootstrapAddress=new Address("10.0.0.1",42000);
+			Message message=new Message(accountId,bootstrapAddress,null);
+			message.setMessageType(1);
+			message.setNodesMap(nodesMap);
+			pastryWriter.sendKey(message);
 		}
 	}
-	public void routeToNextNode(String accountId,int i)
+	public void addNodesMap(Message message)
+	{
+		nodesMap.putAll(message.getNodesMap());
+		System.out.println(nodesMap);
+	}
+	public void sendNodesMap(Message message)
+	{
+		String sender=message.getSenderId();
+		Address senderAddress=message.getNodesMap().get(sender);
+		Message responseMessage= new Message(accountId,senderAddress,null);
+		responseMessage.setMessageType(2);
+		responseMessage.setNodesMap(nodesMap);
+		pastryWriter.sendKey(responseMessage);	
+	}
+	public void broadcast(Message message)
+	{
+		if(message.getMessageType()==4)
+		{
+			for(String  key:nodesMap.keySet())
+			{
+				if(key!="0001" && key!=accountId)
+				{
+					Message msg=new Message(accountId,nodesMap.get(key),null);
+					msg.setMessageType(4);
+					Map<String,Address> newNodeInfo=new HashMap<String,Address>();
+					newNodeInfo.put("accountId",nodesMap.get(accountId));
+					msg.setNodesMap(newNodeInfo);
+					pastryWriter.sendKey(msg);
+				}
+			}
+		}
+	}
+	public void addBroadcastNodesMap(Message message)
+	{
+		nodesMap.putAll(message.getNodesMap());
+		System.out.println(nodesMap);
+	}
+	/*public void routeToNextNode(String accountId,int i)
 	{
 		int nextMatch=accountId.charAt(i+1)-48;
 		if(routingTable[i+1][nextMatch]!=null)
 		{
 			
 		}
-	}
-	
+	}*/
 }
 
