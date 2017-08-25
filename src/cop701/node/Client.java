@@ -48,7 +48,7 @@ public class Client {
 		
 		String ipAddr = Util.getIpAddress();
 		this.address = new Address(ipAddr, serverSocket.getLocalPort());
-		
+		nodesMap.put(id, address);
 		inProgressTransactions = new ArrayList<Transaction>();
 		ledger = new Ledger();
 		try {
