@@ -2,6 +2,8 @@ package cop701.pastry;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,8 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import cop701.common.Util;
 import cop701.node.Address;
-
+import cop701.node.Client;
 
 public class Pastry {
 
@@ -34,20 +37,18 @@ public class Pastry {
 	private List<String> neighborhoodSet;
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
-	
 	private PastryWriter pastryWriter;
 	
-	public Pastry(String accountId, Map<String, Address> nodesMap) throws IOException {
+	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
-		
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
 		serverSocket = new ServerSocket(0);
-		
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
+		nodeInitialization(accountId,nodesMap);
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
@@ -124,5 +125,34 @@ public class Pastry {
 		} 
 		
 	}
+	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
+	{
+		Address address=nodesMap.get(accountId);
+		if(!(address.getIp().equals("10.10.15.1")))
+		{
+			//pastryWriter.write
+			
+			
+			
+		}
+		else
+		{
+			//TODO getPastryObject
+			
+			
+			
+			
+			
+		}
+	}
+	public void routeToNextNode(String accountId,int i)
+	{
+		int nextMatch=accountId.charAt(i+1)-48;
+		if(routingTable[i+1][nextMatch]!=null)
+		{
+			
+		}
+	}
 	
 }
+

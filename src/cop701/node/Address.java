@@ -24,4 +24,8 @@ public class Address {
 		return port;
 	}
 	
+	public String toString() {
+		return ip + ":" + port.toString();
+	}
+	
 }
