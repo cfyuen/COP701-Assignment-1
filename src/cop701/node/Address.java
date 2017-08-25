@@ -34,7 +34,7 @@ public class Address implements Serializable {
 	}
 	
 	public boolean equals(Address a) {
-		return (a.ip == this.ip) && (a.port == this.port);
+		return (a.ip.equals(this.ip)) && (a.port.equals(this.port));
 	}
 	
 }
