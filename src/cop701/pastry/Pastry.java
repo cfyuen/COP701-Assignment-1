@@ -40,6 +40,8 @@ public class Pastry {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
+		System.out.println("[" + accountId + "] NodesMap " + nodesMap.size());
+		System.out.println(nodesMap.keySet().toString());
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
@@ -107,11 +109,14 @@ public class Pastry {
 
 	public void start() throws IOException {
 		pastryWriter = new PastryWriter();
+		
+		nodeInitialization();
 	}
 	
 	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
+		System.out.println(address.toString());
 		if(!(address.getIp().equals("10.0.0.1")))
 		{
 			Address bootstrapAddress=new Address("10.0.0.1",42000);

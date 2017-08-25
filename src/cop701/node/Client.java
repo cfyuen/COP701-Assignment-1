@@ -59,7 +59,7 @@ public class Client {
 		else this.accountId = id;
 			
 		this.address = new Address(ip, serverSocket.getLocalPort());
-		nodesMap.put(id, address);
+		nodesMap.put(accountId, address);
 		inProgressTransactions = new ArrayList<Transaction>();
 		transactionCounter = 0;
 		ledger = new Ledger();
@@ -69,8 +69,6 @@ public class Client {
 		publicKey = kp.getPublic();
 	
 		pastry = new Pastry(accountId,nodesMap);
-		pastry.nodeInitialization();
-		
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {

@@ -1,12 +1,17 @@
 package cop701.pastry;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import cop701.node.Address;
 
-public class Message {
+public class Message implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8179684450336870390L;
 	private String senderId;
 	private Address address;
 	private String queryAccountId;
