@@ -27,6 +27,9 @@ public class ClientController {
 				else if (token[0].equals("query")) {
 					query(token);
 				}
+				else if (token[0].equals("hash")) {
+					hash(token);
+				}
 				else {
 					System.out.println("Unrecognized commands");
 				}
@@ -38,6 +41,7 @@ public class ClientController {
 		System.out.println("[Controller] Help");
 		System.out.println("send [receiver account] [witness account] [amount] - Initiate transaction");
 		System.out.println("query [account] - Query the amount of bitcoins for account");
+		System.out.println("hash - Print the hash code of the ledger of the current node");
 		System.out.println();
 	}
 	
@@ -54,6 +58,15 @@ public class ClientController {
 		try {
 			Double amount = client.getTotalAmountOf(token[1]);
 			System.out.println("Account " + token[1] + " has a total of " + String.valueOf(amount) + " bitcoins.");
+		} catch (Exception e) {
+			System.out.println("Please follow the help example");
+		}
+	}
+	
+	public void hash(String[] token) {
+		try {
+			String hash = client.getLedgerHashCode();
+			System.out.println("Account " + client.getAccount() + " ledger's hash code = " + hash);
 		} catch (Exception e) {
 			System.out.println("Please follow the help example");
 		}

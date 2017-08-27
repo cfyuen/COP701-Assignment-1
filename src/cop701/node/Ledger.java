@@ -1,4 +1,9 @@
 package cop701.node;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -127,6 +132,33 @@ public class Ledger {
 				amount +=t.getAmount();
 		}
 		return amount;
+	}
+	
+	public String getHashCode() {
+		// Hashing using SHA 256
+		String hash = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			
+			ByteArrayOutputStream byteos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(byteos);
+			oos.writeObject(this.ledger);
+			oos.close();
+			
+			md.update(byteos.toByteArray());
+			byte[] bytes = md.digest();
+			
+			StringBuilder sbtohex = new StringBuilder();
+		    for(byte b : bytes) {
+		    	sbtohex.append(String.format("%02x", b));
+		    }
+		    hash = sbtohex.toString();
+			
+		} catch (NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
+		return hash;
+		
 	}
 	
 	public List<Transaction> getLedger() {

@@ -200,6 +200,10 @@ public class Client {
 		return ledger.getTotalAmountOf(accountId);		
 	}
 	
+	public String getLedgerHashCode() {
+		return ledger.getHashCode();
+	}
+	
 	public void handleTransactionResponse(TransactionResponse tr)
 	{
 		for(Transaction t:inProgressTransactions)
@@ -292,5 +296,6 @@ public class Client {
 		
 		return true;
 	}
+
 
 }
