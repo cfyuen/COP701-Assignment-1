@@ -231,6 +231,7 @@ public class Client {
 		if (accountId.equals("0001")) {
 			Transaction t = new Transaction();
 			t.setTransactionId("N" + accountId + "T" + String.valueOf(transactionCounter));
+			transactionCounter += 2;
 			t.setAmount(10000.0);
 			t.setSenderId(accountId);
 			t.setReceiverId(accountId);

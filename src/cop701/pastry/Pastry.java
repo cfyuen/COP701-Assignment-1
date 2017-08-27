@@ -60,20 +60,20 @@ public class Pastry {
 		nodeInitialization();
 	}
 	
-	public PublicKey get(String senderId, String queryAccountId) {
+	public void get(String senderId, String queryAccountId) {
 		// 0. Check if key is the node itself
 		if (queryAccountId.equals(accountId)) {
-			sendKey(senderId,pkMap.get(accountId));
+			sendKey(senderId,pkMap.get(accountId),queryAccountId);
 		}
 		// 1. Iterate leaf set
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				sendKey(senderId,pkMap.get(leaf));
+				sendKey(senderId,pkMap.get(leaf),queryAccountId);
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				sendKey(senderId,pkMap.get(leaf));
+				sendKey(senderId,pkMap.get(leaf),queryAccountId);
 			}
 		}
 		// 2. Find in routing table
@@ -93,7 +93,6 @@ public class Pastry {
 			}
 		}
 		logger.warning("Should not reach here");
-		return null;
 	}
 	
 	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
@@ -102,9 +101,9 @@ public class Pastry {
 		 pastryWriter.forwardMessage(m);
 	}
 	
-	public void sendKey(String senderId, PublicKey pk)
+	public void sendKey(String senderId, PublicKey pk, String queryAccountId)
 	{
-		Message m = new Message(senderId,nodesMap.get(senderId),null);
+		Message m = new Message(senderId,nodesMap.get(senderId),queryAccountId);
 		m.setPk(pk);
 		pastryWriter.forwardMessage(m);
 	}
