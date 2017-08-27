@@ -28,6 +28,14 @@ public class Message implements Serializable {
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	
+	public Message(String senderId, Address address, String queryAccountId)
+	{
+		this.senderId = senderId;
+		this.address = address;
+		this.queryAccountId = queryAccountId;
+		pk=null;
+	}
+	
 	public String[][] getRoutingTable() {
 		return routingTable;
 	}
@@ -58,14 +66,6 @@ public class Message implements Serializable {
 
 	public void setRightLeafSet(List<String> rightLeafSet) {
 		this.rightLeafSet = rightLeafSet;
-	}
-	
-	public Message(String senderId, Address address, String queryAccountId)
-	{
-		this.senderId = senderId;
-		this.address = address;
-		this.queryAccountId = queryAccountId;
-		pk=null;
 	}
 	
 	public void setMessageType(int messageType) {
