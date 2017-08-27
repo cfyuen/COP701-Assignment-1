@@ -60,7 +60,7 @@ public class LedgerTest {
 		verify.setInputTransactions(list);
 		verify.setValid(true);
 		
-		boolean verified=ledger.verify_transaction(verify);
+		boolean verified=ledger.verifyTransaction(verify);
 		
 		assertEquals(false, verified);
 		Transaction verify1 = new Transaction();
@@ -72,7 +72,7 @@ public class LedgerTest {
 		verify1.setInputTransactions(list);
 		verify1.setValid(true);
 		
-		boolean verified1=ledger.verify_transaction(verify1);
+		boolean verified1=ledger.verifyTransaction(verify1);
 		assertEquals(true, verified1);
 		//List<Transaction> led = ledger.getLedger();
 		//assertEquals(4,led.size());

@@ -5,10 +5,30 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 
 public class Util {
-
+	
+	private static final Logger logger = Logger.getLogger(Util.class.getName()); 
+	
+	public static KeyPair generateKeyPairs() {
+		KeyPairGenerator kg = null;
+		try {
+			kg = KeyPairGenerator.getInstance("DSA");
+			kg.initialize(1024);
+			KeyPair kp = kg.generateKeyPair();
+			return kp;
+		} catch (NoSuchAlgorithmException e) {
+			logger.warning("Error generating public / private keys");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static String getIpAddress() throws UnknownHostException, SocketException {
 		// Get IP address (linux)
 		String ipAddr = null;
@@ -32,6 +52,16 @@ public class Util {
 			ipAddr = InetAddress.getLocalHost().getHostAddress();
 		}
 		return ipAddr;
+	}
+	
+	public static String generateAccountId(int b, int l, String ip) {
+		String[] ipSplit = ip.split("\\.");
+		Integer hash = Integer.valueOf(ipSplit[1])*256*256 + Integer.valueOf(ipSplit[2])*256 + Integer.valueOf(ipSplit[3]);
+		String baseB = Integer.toString(hash, b);
+		while (baseB.length() < l) {
+			baseB = "0" + baseB;
+		}
+		return baseB.substring(baseB.length() - l); 
 	}
 	
 }

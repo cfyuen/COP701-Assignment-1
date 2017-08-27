@@ -21,15 +21,14 @@ public class Pastry {
 	 * Assuming there is no more than 256 nodes
 	 * Example node id = "0231", "0012"
 	 */
-	private final int B = 2; // bits every digit in node id
-	private final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
-	private final int M = 8; // number of nodes in neighborhood set
+	public static final int B = 2; // bits every digit in node id
+	public static final int L = 4; // Contains 2 nodes to the left and 2 nodes to the right in leaf set
+	public static final int M = 8; // number of nodes in neighborhood set
 	
 	private Map<String, PublicKey> pkMap;
 	
 	private String accountId;
 	private Map<String,Address> nodesMap;
-	private ServerSocket serverSocket;
 	
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
@@ -38,17 +37,28 @@ public class Pastry {
 	private PastryWriter pastryWriter;
 	private PastryListener pastryListener;
 	
+	private Address bootstrapAddress = new Address("10.0.0.1",42000);
+	
 	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
-		serverSocket = new ServerSocket(0);
+		System.out.println("[" + accountId + "] NodesMap " + nodesMap.size());
+		System.out.println(nodesMap.keySet().toString());
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
-		nodeInitialization(accountId,nodesMap);
-		pastryListener = new PastryListener();
+		
+		
+		pastryListener = new PastryListener(this);
+
+	}
+	
+	public void start() throws IOException {
+		pastryWriter = new PastryWriter();
+		
+		nodeInitialization();
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
@@ -57,7 +67,6 @@ public class Pastry {
 			sendKey(senderId,pkMap.get(accountId));
 		}
 		// 1. Iterate leaf set
-		// TODO need checking
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
 				sendKey(senderId,pkMap.get(leaf));
@@ -118,37 +127,106 @@ public class Pastry {
 		return a.length();
 	}
 
-	public void nodeInitialization(String accountId,Map<String,Address> nodesMap) throws UnknownHostException, SocketException
+	
+	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
-		if(!(address.getIp().equals("10.10.15.1")))
+		System.out.println(address.toString());
+		if(!(address.equals(bootstrapAddress)))
 		{
-			//pastryWriter.write
-			
-			
-			
-		}
-		else
-		{
-			//TODO getPastryObject
-			
-			
-			
-			
-			
+			Message message=new Message(accountId,bootstrapAddress,null);
+			message.setMessageType(1);
+			message.setNodesMap(nodesMap);
+			pastryWriter.forwardMessage(message);
 		}
 	}
-	public void routeToNextNode(String accountId,int i)
+	public void addNodesMap(Message message)
 	{
-		int nextMatch=accountId.charAt(i+1)-48;
-		if(routingTable[i+1][nextMatch]!=null)
+		nodesMap.putAll(message.getNodesMap());
+		System.out.println(nodesMap);
+	}
+	public void sendNodesMap(Message message)
+	{
+		String sender=message.getSenderId();
+		Address senderAddress=message.getNodesMap().get(sender);
+		Message responseMessage= new Message(accountId,senderAddress,null);
+		responseMessage.setMessageType(2);
+		responseMessage.setNodesMap(nodesMap);
+		pastryWriter.forwardMessage(responseMessage);	
+	}
+	public void broadcast(Message message)
+	{
+		if(message.getMessageType()==4)
 		{
-			
+			for(String  key:nodesMap.keySet())
+			{
+				if(key!="0001" && key!=accountId)
+				{
+					Message msg=new Message(accountId,nodesMap.get(key),null);
+					msg.setMessageType(4);
+					Map<String,Address> newNodeInfo=new HashMap<String,Address>();
+					newNodeInfo.put("accountId",nodesMap.get(accountId));
+					msg.setNodesMap(newNodeInfo);
+					pastryWriter.forwardMessage(msg);
+				}
+			}
 		}
 	}
 
 	public PastryListener getPastryListener() {
 		return pastryListener;
+	}	
+
+	public void addBroadcastNodesMap(Message message)
+	{
+		nodesMap.putAll(message.getNodesMap());
+		System.out.println(nodesMap);
+	}
+
+
+
+	public Map<String, PublicKey> getPkMap() {
+		return pkMap;
+	}
+
+	public void setPkMap(Map<String, PublicKey> pkMap) {
+		this.pkMap = pkMap;
+	}
+
+	public String[][] getRoutingTable() {
+		return routingTable;
+	}
+
+	public void setRoutingTable(String[][] routingTable) {
+		this.routingTable = routingTable;
+	}
+
+	public List<String> getNeighborhoodSet() {
+		return neighborhoodSet;
+	}
+
+	public void setNeighborhoodSet(List<String> neighborhoodSet) {
+		this.neighborhoodSet = neighborhoodSet;
+	}
+
+	public List<String> getLeftLeafSet() {
+		return leftLeafSet;
+	}
+
+	public void setLeftLeafSet(List<String> leftLeafSet) {
+		this.leftLeafSet = leftLeafSet;
+	}
+
+	public List<String> getRightLeafSet() {
+		return rightLeafSet;
+	}
+
+	public void setRightLeafSet(List<String> rightLeafSet) {
+		this.rightLeafSet = rightLeafSet;
+	}
+	
+	public void setBootstrapAddress(Address bootstrapAddress) {
+		this.bootstrapAddress = bootstrapAddress;
 	}
 	
 }

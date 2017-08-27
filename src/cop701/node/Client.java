@@ -7,8 +7,6 @@ import cop701.pastry.Pastry;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -22,12 +20,15 @@ import java.util.logging.Logger;
 
 public class Client {
 	
-	private static final Logger logger = Logger.getLogger(Client.class.getName()); 
+	private static final Logger logger = Logger.getLogger(Client.class.getName());
+	
+	public static final int LISTENER_PORT = 42000;
 	
 	private String accountId;
 	private Address address;
 	private ServerSocket serverSocket;
 	private List<Transaction> inProgressTransactions;
+	private Integer transactionCounter;
 	private ClientWriter clientWriter;
 	private Ledger ledger;
 	
@@ -42,24 +43,33 @@ public class Client {
 	 * This is the main program for client node
 	 * @throws IOException 
 	 */
+	public Client() throws IOException {
+		this(null);
+	}
+	
 	public Client(String id) throws IOException {
-		serverSocket = new ServerSocket(42000);
-		this.accountId = id;
+		this(id, null, LISTENER_PORT);
+	}
+	
+	public Client(String id, String ip, int port) throws IOException {
+		serverSocket = new ServerSocket(port);
 		
-		String ipAddr = Util.getIpAddress();
-		this.address = new Address(ipAddr, serverSocket.getLocalPort());
-		nodesMap.put(id, address);
+		if (ip == null) ip = Util.getIpAddress();
+		if (id == null) this.accountId = Util.generateAccountId((int)Math.pow(2, Pastry.B), Pastry.L, ip);
+		else this.accountId = id;
+			
+		this.address = new Address(ip, serverSocket.getLocalPort());
+		nodesMap.put(accountId, address);
 		inProgressTransactions = new ArrayList<Transaction>();
+		transactionCounter = 0;
 		ledger = new Ledger();
-		try {
-			generateKeyPairs();
-		} catch (NoSuchAlgorithmException e) {
-			logger.warning("Error generating public / private keys");
-			e.printStackTrace();
-		}
+		initializeLedger();
+
+		KeyPair kp = Util.generateKeyPairs();
+		privateKey = kp.getPrivate();
+		publicKey = kp.getPublic();
 	
 		pastry = new Pastry(accountId,nodesMap);
-		
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {
@@ -75,8 +85,7 @@ public class Client {
 	public static void main(String[] args) throws IOException {
 		setup();
 		
-		String id = args[0];
-		Client client = new Client(id);
+		Client client = new Client();
 		client.start();
 	}
 	
@@ -107,6 +116,13 @@ public class Client {
 		
 		clientWriter = new ClientWriter(this);
 		
+		ClientController clientController = new ClientController(this);
+		new Thread(new Runnable() {
+			   public void run() {
+			       clientController.start();
+			   }
+			}).start();
+		
 		System.out.println("[" + accountId + "] Listening on " + address.toString());
 		while (true) {
 			new ClientListener(this, serverSocket.accept()).run();
@@ -115,14 +131,6 @@ public class Client {
 	
 	public void stop() throws IOException {
 		serverSocket.close();
-	}
-	
-	public void generateKeyPairs() throws NoSuchAlgorithmException {
-		KeyPairGenerator kg = KeyPairGenerator.getInstance("DSA");
-		kg.initialize(1024);
-		KeyPair kp = kg.generateKeyPair();
-		privateKey = kp.getPrivate();
-		publicKey = kp.getPublic();
 	}
 	
 	public void hello() {
@@ -140,7 +148,7 @@ public class Client {
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {
-		this.ledger.verify_transaction(transaction);
+		this.ledger.verifyTransaction(transaction);
 	}
 	
 	public void broadcast(Transaction t)
@@ -158,6 +166,12 @@ public class Client {
 	
 	public void addPublicKey(String accountId, PublicKey pk) {
 		pastry.put(accountId, pk);
+	}
+	
+	public void initiateTransaction(double amount, String receiverId, String witnessId) {
+		String transactionId = "N" + accountId + "T" + String.valueOf(transactionCounter);
+		transactionCounter += 2;
+		initiateTransaction(amount, receiverId, witnessId, transactionId);
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
@@ -181,6 +195,10 @@ public class Client {
 			clientWriter.sendObject(t.getWitnessId(), t);
 		}	
 	}
+
+	public double getTotalAmountOf(String accountId) {
+		return ledger.getTotalAmountOf(accountId);		
+	}
 	
 	public void handleTransactionResponse(TransactionResponse tr)
 	{
@@ -203,6 +221,24 @@ public class Client {
 			}
 		}
 		
+	}
+	
+	private void initializeLedger() {
+		if (accountId.equals("0001")) {
+			Transaction t = new Transaction();
+			t.setTransactionId("N" + accountId + "T" + String.valueOf(transactionCounter));
+			t.setAmount(10000.0);
+			t.setSenderId(accountId);
+			t.setReceiverId(accountId);
+			t.setWitnessId(accountId);
+			t.setValid(true);
+			
+			ledger.addTransaction(t);
+		}
+	}
+	
+	public void setBootstrapAddress(Address bootstrapAddress) {
+		pastry.setBootstrapAddress(bootstrapAddress);
 	}
 	
 	public String getAccount() {

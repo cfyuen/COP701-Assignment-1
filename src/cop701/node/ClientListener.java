@@ -43,12 +43,12 @@ public class ClientListener extends Thread {
 		} catch (IOException e) {
 			System.out.println("Error in reading object from input stream");
 			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		if(inObject instanceof Message)
 		{
-			this.client.getPastry().getPastryListener().doStuff((Message)inObject);
+			this.client.getPastry().getPastryListener().doStuff(inObject);
 		}
 		else
 		{
