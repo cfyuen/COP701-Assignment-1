@@ -125,6 +125,7 @@ public class Pastry {
 	{
 		nodesMap.putAll(message.getNodesMap());
 		System.out.println(nodesMap);
+		
 	}
 	public void sendNodesMap(Message message)
 	{
@@ -133,7 +134,10 @@ public class Pastry {
 		Message responseMessage= new Message(accountId,senderAddress,null);
 		responseMessage.setMessageType(2);
 		responseMessage.setNodesMap(nodesMap);
-		pastryWriter.sendKey(responseMessage);	
+		pastryWriter.sendKey(responseMessage);
+		Message getNewNodeLocation= new Message(accountId,senderAddress,sender);
+		getNewNodeLocation.setMessageType(5);
+		routeToNode(accountId,getNewNodeLocation,sender);
 	}
 	public void broadcast(Message message)
 	{
@@ -141,7 +145,7 @@ public class Pastry {
 		{
 			for(String  key:nodesMap.keySet())
 			{
-				if(key!="0001" && key!=accountId)
+				if(!key.equals("0001") && !key.equals(accountId))
 				{
 					Message msg=new Message(accountId,nodesMap.get(key),null);
 					msg.setMessageType(4);
@@ -152,6 +156,23 @@ public class Pastry {
 				}
 			}
 		}
+	}
+	public void routeToNode(String senderId,Message msg,String destination)
+	{
+		if (destination.equals(accountId)) {
+			System.out.println("Boomerang");
+		}
+		else {
+			int l = longestPrefix(destination,accountId);
+			String route = routingTable[l][Integer.valueOf(destination.charAt(l)-'0')];
+			if (!(route == null))
+			forwardRequest(senderId,msg,destination);
+		}
+			
+	}
+	public void forwardRequest(String sender,Message msg,String destination)
+	{
+		
 	}
 	public void addBroadcastNodesMap(Message message)
 	{

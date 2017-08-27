@@ -9,11 +9,16 @@ public class Message {
 	
 	private String senderId;
 	private Address address;
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+
 	private String queryAccountId;
 	private int messageType;/*1:when a sender sends a request to ask for nodesMap
 	 						  2:when a nodes returns the nodesMap
 	 						  3:for routing a message to a particular accountId
-	 						  4:broadcast message for adding new node to nodesMap*/
+	 						  4:broadcast message for adding new node to nodesMap
+	 						  5:finding correct location of a new node*/
 	private Map<String,Address> nodesMap;
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
