@@ -21,7 +21,7 @@ public class PastryListener {
 		if (inObject instanceof Message) {
 			Message m = (Message)inObject;
 			logger.info("Pastry message received");
-			this.pastry.get(m.getSenderId(),m.getQueryAccountId());
+			
 			if(m.getMessageType()==2)
 			{
 				this.pastry.addNodesMap(m);
@@ -33,6 +33,10 @@ public class PastryListener {
 			else if(m.getMessageType()==4)
 			{
 				this.pastry.addBroadcastNodesMap(m);
+			}
+			else if(m.getMessageType()==6)
+			{
+				this.pastry.get(m.getSenderId(),m.getQueryAccountId());
 			}
 		}
 		

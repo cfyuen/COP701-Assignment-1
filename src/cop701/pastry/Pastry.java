@@ -1,7 +1,6 @@
 package cop701.pastry;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
@@ -143,7 +142,9 @@ public class Pastry {
 	public void addNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
-		System.out.println(nodesMap);
+		System.out.println("AddNodesMap [" + accountId + "]" + nodesMap);
+		message.setMessageType(4);
+		broadcast(message);
 	}
 	public void sendNodesMap(Message message)
 	{
@@ -152,6 +153,7 @@ public class Pastry {
 		Message responseMessage= new Message(accountId,senderAddress,null);
 		responseMessage.setMessageType(2);
 		responseMessage.setNodesMap(nodesMap);
+		nodesMap.putAll(message.getNodesMap());
 		pastryWriter.forwardMessage(responseMessage);	
 	}
 	public void broadcast(Message message)
@@ -160,15 +162,12 @@ public class Pastry {
 		{
 			for(String  key:nodesMap.keySet())
 			{
-				if(key!="0001" && key!=accountId)
-				{
-					Message msg=new Message(accountId,nodesMap.get(key),null);
-					msg.setMessageType(4);
-					Map<String,Address> newNodeInfo=new HashMap<String,Address>();
-					newNodeInfo.put("accountId",nodesMap.get(accountId));
-					msg.setNodesMap(newNodeInfo);
-					pastryWriter.forwardMessage(msg);
-				}
+				Message msg=new Message(accountId,nodesMap.get(key),null);
+				msg.setMessageType(4);
+				Map<String,Address> newNodeInfo=new HashMap<String,Address>();
+				newNodeInfo.put(accountId,nodesMap.get(accountId));
+				msg.setNodesMap(newNodeInfo);
+				pastryWriter.forwardMessage(msg);
 			}
 		}
 	}
@@ -180,7 +179,7 @@ public class Pastry {
 	public void addBroadcastNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
-		System.out.println(nodesMap);
+		System.out.println("AddBroadcastNodesMap [" + accountId + "]" + nodesMap);
 	}
 
 

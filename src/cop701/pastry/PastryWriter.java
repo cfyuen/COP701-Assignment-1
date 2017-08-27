@@ -3,7 +3,6 @@ package cop701.pastry;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.PublicKey;
 import java.util.logging.Logger;
 
 

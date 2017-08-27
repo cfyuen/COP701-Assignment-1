@@ -10,6 +10,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.SignedObject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -27,7 +28,7 @@ public class ClientListener extends Thread {
 	public ClientListener(Client client, Socket socket) {
 		this.client = client;
 		this.socket = socket;
-		
+		inProgressMessage = new ArrayList<Object>(); 
 	}
 	
 	public void run() {

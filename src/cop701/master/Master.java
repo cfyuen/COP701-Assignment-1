@@ -38,6 +38,7 @@ public class Master {
 				if (i == 0) port = 42000;
 				String ip = InetAddress.getLocalHost().getHostAddress();
 				Client client = new Client("000" + String.valueOf(i+1), ip, port);
+				client.setBootstrapAddress(new Address(ip, 42000));
 				clients.add(client);
 				
 				new Thread(new Runnable() {
@@ -50,10 +51,6 @@ public class Master {
 						}
 					   }
 					}).start();
-				
-				if (i == 0) {
-					client.setBootstrapAddress(new Address(ip, port));
-				}
 				
 				try {
 					Thread.sleep(500);
@@ -75,7 +72,7 @@ public class Master {
 		//addNodeIdentityMap();
 		//initializeLedger();
 
-		clients.get(0).initiateTransaction(2.0,"0002","0003");
+		//clients.get(0).initiateTransaction(2.0,"0002","0003");
 
 
 	}
