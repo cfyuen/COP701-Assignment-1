@@ -1,33 +1,42 @@
 package cop701.pastry;
 
+import java.security.PublicKey;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 import cop701.node.Address;
 
-public class Message {
+public class Message implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8179684450336870390L;
 	private String senderId;
 	private Address address;
-	public void setAddress(Address address) {
-		this.address = address;
-	}
-
 	private String queryAccountId;
+	private PublicKey pk;
 	private int messageType;/*1:when a sender sends a request to ask for nodesMap
 	 						  2:when a nodes returns the nodesMap
 	 						  3:for routing a message to a particular accountId
 	 						  4:broadcast message for adding new node to nodesMap
-	 						  5:finding correct location of a new node*/
+	 						  5:finding correct location of a new node
+	 						  6:msg for getting public key
+	 						  7:msg informing a node about its current location
+	 						  8:msg telling the node on the left of new node to send its details */
 	private Map<String,Address> nodesMap;
 	private String[][] routingTable;
 	private List<String> neighborhoodSet;
 	private List<String> leftLeafSet;
+	private List<String> rightLeafSet;
 	
 	public String[][] getRoutingTable() {
 		return routingTable;
 	}
-
+	public void setAddress(Address address) {
+		this.address = address;
+	}
 	public void setRoutingTable(String[][] routingTable) {
 		this.routingTable = routingTable;
 	}
@@ -55,14 +64,13 @@ public class Message {
 	public void setRightLeafSet(List<String> rightLeafSet) {
 		this.rightLeafSet = rightLeafSet;
 	}
-
-	private List<String> rightLeafSet;
 	
 	public Message(String senderId, Address address, String queryAccountId)
 	{
 		this.senderId = senderId;
 		this.address = address;
 		this.queryAccountId = queryAccountId;
+		pk=null;
 	}
 	
 	public void setMessageType(int messageType) {
@@ -83,6 +91,14 @@ public class Message {
 
 	public String getQueryAccountId() {
 		return queryAccountId;
+	}
+
+	public PublicKey getPk() {
+		return pk;
+	}
+
+	public void setPk(PublicKey pk) {
+		this.pk = pk;
 	}
 	
 	public int getMessageType() {

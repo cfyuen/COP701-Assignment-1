@@ -1,7 +1,6 @@
 package cop701.pastry;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
@@ -35,31 +34,46 @@ public class Pastry {
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	private PastryWriter pastryWriter;
+	private PastryListener pastryListener;
+	
+	private Address bootstrapAddress = new Address("10.0.0.1",42000);
 	
 	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
+		System.out.println("[" + accountId + "] NodesMap " + nodesMap.size());
+		System.out.println(nodesMap.keySet().toString());
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
+		
+		
+		pastryListener = new PastryListener(this);
+
+	}
+	
+	public void start() throws IOException {
+		pastryWriter = new PastryWriter();
+		
+		nodeInitialization();
 	}
 	
 	public PublicKey get(String senderId, String queryAccountId) {
 		// 0. Check if key is the node itself
 		if (queryAccountId.equals(accountId)) {
-			return pkMap.get(queryAccountId);
+			sendKey(senderId,pkMap.get(accountId));
 		}
 		// 1. Iterate leaf set
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return pkMap.get(leaf);
+				sendKey(senderId,pkMap.get(leaf));
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				return pkMap.get(leaf);
+				sendKey(senderId,pkMap.get(leaf));
 			}
 		}
 		// 2. Find in routing table
@@ -85,7 +99,14 @@ public class Pastry {
 	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
 		
 		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
-		 pastryWriter.sendKey(m);
+		 pastryWriter.forwardMessage(m);
+	}
+	
+	public void sendKey(String senderId, PublicKey pk)
+	{
+		Message m = new Message(senderId,nodesMap.get(senderId),null);
+		m.setPk(pk);
+		pastryWriter.forwardMessage(m);
 	}
 	
 	// Legacy method
@@ -105,27 +126,26 @@ public class Pastry {
 		return a.length();
 	}
 
-	public void start() throws IOException {
-		pastryWriter = new PastryWriter();
-	}
 	
 	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
-		if(!(address.getIp().equals("10.0.0.1")))
+		System.out.println(address.toString());
+		if(!(address.equals(bootstrapAddress)))
 		{
-			Address bootstrapAddress=new Address("10.0.0.1",42000);
 			Message message=new Message(accountId,bootstrapAddress,null);
 			message.setMessageType(1);
 			message.setNodesMap(nodesMap);
-			pastryWriter.sendKey(message);
+			pastryWriter.forwardMessage(message);
 		}
 	}
 	public void addNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
 		System.out.println(nodesMap);
-		
+		System.out.println("AddNodesMap [" + accountId + "]" + nodesMap);
+		message.setMessageType(4);
+		broadcast(message);
 	}
 	public void sendNodesMap(Message message)
 	{
@@ -134,10 +154,12 @@ public class Pastry {
 		Message responseMessage= new Message(accountId,senderAddress,null);
 		responseMessage.setMessageType(2);
 		responseMessage.setNodesMap(nodesMap);
-		pastryWriter.sendKey(responseMessage);
+		pastryWriter.forwardMessage(responseMessage);
 		Message getNewNodeLocation= new Message(accountId,senderAddress,sender);
 		getNewNodeLocation.setMessageType(5);
 		routeToNode(accountId,getNewNodeLocation,sender);
+		nodesMap.putAll(message.getNodesMap());
+		pastryWriter.forwardMessage(responseMessage);	
 	}
 	public void broadcast(Message message)
 	{
@@ -152,7 +174,7 @@ public class Pastry {
 					Map<String,Address> newNodeInfo=new HashMap<String,Address>();
 					newNodeInfo.put("accountId",nodesMap.get(accountId));
 					msg.setNodesMap(newNodeInfo);
-					pastryWriter.sendKey(msg);
+					pastryWriter.forwardMessage(msg);
 				}
 			}
 		}
@@ -174,10 +196,35 @@ public class Pastry {
 	{
 		
 	}
+
+	public void addDetails(Message msg)
+	{
+		if(msg.getSenderId().compareTo(accountId)<0)
+		{
+			routingTable=msg.getRoutingTable();
+			rightLeafSet.set(1, msg.getSenderId());
+			rightLeafSet.set(0, msg.getRightLeafSet().get(1));
+		}
+		else if(msg.getSenderId().compareTo(accountId)>0)
+		{
+			leftLeafSet.set(0, msg.getSenderId());
+			leftLeafSet.set(1, msg.getLeftLeafSet().get(0));
+		}
+	}
+	public void sendLeftLeafSet(Message msg)
+	{
+		msg.setMessageType(7);
+		msg.setLeftLeafSet(leftLeafSet);
+		msg.setAddress(nodesMap.get(msg.getQueryAccountId()));
+		pastryWriter.forwardMessage(msg);
+	}
+	public PastryListener getPastryListener() {
+		return pastryListener;
+	}	
 	public void addBroadcastNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
-		System.out.println(nodesMap);
+		System.out.println("AddBroadcastNodesMap [" + accountId + "]" + nodesMap);
 	}
 
 
@@ -220,6 +267,10 @@ public class Pastry {
 
 	public void setRightLeafSet(List<String> rightLeafSet) {
 		this.rightLeafSet = rightLeafSet;
+	}
+	
+	public void setBootstrapAddress(Address bootstrapAddress) {
+		this.bootstrapAddress = bootstrapAddress;
 	}
 	
 }

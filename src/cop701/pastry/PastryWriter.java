@@ -15,7 +15,7 @@ public class PastryWriter {
 	public PastryWriter() {
 	}
 
-	public void sendKey(Message m) {
+	public void forwardMessage(Message m) {
 		Socket recipientSocket;
 		ObjectOutputStream outputStream;
 		
@@ -30,4 +30,5 @@ public class PastryWriter {
 			e.printStackTrace();
 		}
 	}
+	
 }

@@ -44,33 +44,32 @@ public class Client {
 	 * @throws IOException 
 	 */
 	public Client() throws IOException {
-		this(null, null);
+		this(null);
 	}
 	
 	public Client(String id) throws IOException {
-		this(id, null);
+		this(id, null, LISTENER_PORT);
 	}
 	
-	public Client(String id, String ip) throws IOException {
-		serverSocket = new ServerSocket(LISTENER_PORT);
+	public Client(String id, String ip, int port) throws IOException {
+		serverSocket = new ServerSocket(port);
 		
 		if (ip == null) ip = Util.getIpAddress();
 		if (id == null) this.accountId = Util.generateAccountId((int)Math.pow(2, Pastry.B), Pastry.L, ip);
 		else this.accountId = id;
 			
 		this.address = new Address(ip, serverSocket.getLocalPort());
-		nodesMap.put(id, address);
+		nodesMap.put(accountId, address);
 		inProgressTransactions = new ArrayList<Transaction>();
 		transactionCounter = 0;
 		ledger = new Ledger();
+		initializeLedger();
 
 		KeyPair kp = Util.generateKeyPairs();
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 	
 		pastry = new Pastry(accountId,nodesMap);
-		pastry.nodeInitialization();
-		
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {
@@ -170,7 +169,7 @@ public class Client {
 	}
 	
 	public void initiateTransaction(double amount, String receiverId, String witnessId) {
-		String transactionId = "N" + receiverId + "T" + String.valueOf(transactionCounter);
+		String transactionId = "N" + accountId + "T" + String.valueOf(transactionCounter);
 		transactionCounter += 2;
 		initiateTransaction(amount, receiverId, witnessId, transactionId);
 	}
@@ -222,6 +221,24 @@ public class Client {
 			}
 		}
 		
+	}
+	
+	private void initializeLedger() {
+		if (accountId.equals("0001")) {
+			Transaction t = new Transaction();
+			t.setTransactionId("N" + accountId + "T" + String.valueOf(transactionCounter));
+			t.setAmount(10000.0);
+			t.setSenderId(accountId);
+			t.setReceiverId(accountId);
+			t.setWitnessId(accountId);
+			t.setValid(true);
+			
+			ledger.addTransaction(t);
+		}
+	}
+	
+	public void setBootstrapAddress(Address bootstrapAddress) {
+		pastry.setBootstrapAddress(bootstrapAddress);
 	}
 	
 	public String getAccount() {
