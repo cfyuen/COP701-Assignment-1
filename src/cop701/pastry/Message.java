@@ -16,6 +16,7 @@ public class Message implements Serializable {
 	private String senderId;
 	private Address address;
 	private String queryAccountId;
+
 	private PublicKey pk;
 	private int messageType;/*1:when a sender sends a request to ask for nodesMap
 	 						  2:when a nodes returns the nodesMap
@@ -91,6 +92,10 @@ public class Message implements Serializable {
 
 	public String getQueryAccountId() {
 		return queryAccountId;
+	}
+	
+	public void setQueryAccountId(String queryAccountId) {
+		this.queryAccountId = queryAccountId;
 	}
 
 	public PublicKey getPk() {

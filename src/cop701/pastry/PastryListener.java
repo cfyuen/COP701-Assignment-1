@@ -22,17 +22,21 @@ public class PastryListener {
 			Message m = (Message)inObject;
 			logger.info("Pastry message received");
 			
-			if(m.getMessageType()==2)
-			{
-				this.pastry.addNodesMap(m);
-			}
-			else if(m.getMessageType()==1)
+			if(m.getMessageType()==1)
 			{
 				this.pastry.sendNodesMap(m);
+			}
+			else if(m.getMessageType()==2)
+			{
+				this.pastry.addNodesMap(m);
 			}
 			else if(m.getMessageType()==4)
 			{
 				this.pastry.addBroadcastNodesMap(m);
+			}
+			else if(m.getMessageType()==5)
+			{
+				this.pastry.routeToNode(m.getSenderId(), m, m.getQueryAccountId());
 			}
 			else if(m.getMessageType()==6)
 			{
