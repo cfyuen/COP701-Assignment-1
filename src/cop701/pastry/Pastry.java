@@ -138,6 +138,7 @@ public class Pastry {
 			message.setNodesMap(nodesMap);
 			leftLeafSet.add("0001");
 			rightLeafSet.add("0001");
+			addToRoutingTable("0001");
 			pastryWriter.forwardMessage(message);
 		}
 	}
@@ -146,8 +147,6 @@ public class Pastry {
 		nodesMap.putAll(message.getNodesMap());
 		System.out.println(nodesMap);
 		System.out.println("AddNodesMap [" + accountId + "]" + nodesMap);
-		message.setMessageType(4);
-		broadcast(message);
 	}
 	
 	public void addToRoutingTable(String id)
@@ -205,7 +204,8 @@ public class Pastry {
 		
 		Message getNewNodeLocation= new Message(accountId,senderAddress,sender);
 		getNewNodeLocation.setMessageType(5);
-		routeToNode(accountId,getNewNodeLocation,sender);	
+		getNewNodeLocation.setNodesMap(message.getNodesMap());
+		routeToNode(getNewNodeLocation);	
 	}
 	public void broadcast(Message message)
 	{
@@ -223,8 +223,9 @@ public class Pastry {
 			}
 		}
 	}
-	public void routeToNode(String senderId,Message msg,String destination)
+	public void routeToNode(Message msg)
 	{
+		String destination = msg.getQueryAccountId();
 		if (destination.equals(accountId)) {
 			System.out.println("Boomerang");
 		}
@@ -233,7 +234,13 @@ public class Pastry {
 			String nextHop = routingTable[l][Integer.valueOf(destination.charAt(l)-'0')];
 			if (!(nextHop == null))
 			{
-				forwardRequest(senderId,nextHop,msg,destination);
+				System.out.println("nextHop found l:" + l);
+				for (int i=0; i<L; ++i) {
+					 for(int j=0; j<Math.pow(2, B); ++j)
+						 System.out.print(routingTable[i][j] + " ");
+					 System.out.println();
+				}
+				forwardRequest(nextHop,msg,destination);
 			}
 			else
 			{
@@ -243,10 +250,11 @@ public class Pastry {
 					{
 						Message newMsg=new Message(accountId,nodesMap.get(leftLeafSet.get(0)),destination);
 						newMsg.setMessageType(8);
+						newMsg.setNodesMap(msg.getNodesMap());
 						pastryWriter.forwardMessage(newMsg);
-						newMsg.setRoutingTable(routingTable);
+						//newMsg.setRoutingTable(routingTable);
 						newMsg.setRightLeafSet(rightLeafSet);
-						newMsg.setAddress(nodesMap.get(destination));
+						newMsg.setAddress(msg.getNodesMap().get(destination));
 						newMsg.setMessageType(7);
 						pastryWriter.forwardMessage(newMsg);
 						/*TODO: 1)send location nd tell next node also to do that
@@ -254,16 +262,29 @@ public class Pastry {
 					}
 					else
 					{
-						forwardRequest(senderId,leftLeafSet.get(0),msg,destination);
+						System.out.println("nextHop NOT found " + leftLeafSet);
+						forwardRequest(leftLeafSet.get(0),msg,destination);
 					}
+				}
+				else
+				{
+					Message newMsg=new Message(accountId,msg.getNodesMap().get(destination),destination);
+					newMsg.setRoutingTable(routingTable);
+					newMsg.setRightLeafSet(rightLeafSet);
+					newMsg.setLeftLeafSet(leftLeafSet);
+					newMsg.setMessageType(7);
+					pastryWriter.forwardMessage(newMsg);
+					
+					
 				}
 			}
 		}
 			
 	}
 	
-	public void forwardRequest(String sender,String nextHop,Message msg,String destination)
+	public void forwardRequest(String nextHop,Message msg,String destination)
 	{
+		System.out.println("["+accountId+"] sending msg 5 to " + nextHop + " with destination " + destination);
 		msg.setAddress(nodesMap.get(nextHop));
 		msg.setMessageType(5);
 		msg.setQueryAccountId(destination);
@@ -272,17 +293,27 @@ public class Pastry {
 
 	public void addDetails(Message msg)
 	{
-		if(msg.getSenderId().compareTo(accountId)<0)
+		if(!msg.getSenderId().equals("0001"))
 		{
-			routingTable=msg.getRoutingTable();
-			rightLeafSet.set(1, msg.getSenderId());
-			rightLeafSet.set(0, msg.getRightLeafSet().get(1));
+			if(msg.getSenderId().compareTo(accountId)<0)
+			{
+				//routingTable=msg.getRoutingTable();
+				rightLeafSet = msg.getRightLeafSet();
+				rightLeafSet.add(msg.getSenderId());
+				if (rightLeafSet.size() > L/2)
+					rightLeafSet.remove(0);
+			}
+			else if(msg.getSenderId().compareTo(accountId)>0)
+			{
+				leftLeafSet = msg.getLeftLeafSet();
+				leftLeafSet.add(0, msg.getSenderId());
+				if (leftLeafSet.size() > L/2)
+					leftLeafSet.remove(leftLeafSet.size()-1);
+			}
 		}
-		else if(msg.getSenderId().compareTo(accountId)>0)
-		{
-			leftLeafSet.set(0, msg.getSenderId());
-			leftLeafSet.set(1, msg.getLeftLeafSet().get(0));
-		}
+		msg.setNodesMap(nodesMap);
+		msg.setMessageType(4);
+		broadcast(msg);
 		System.out.println("["+ accountId +"] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
 		for (int i=0; i<L; ++i) {
 			 for(int j=0; j<Math.pow(2, B); ++j)
@@ -293,8 +324,9 @@ public class Pastry {
 	public void sendLeftLeafSet(Message msg)
 	{
 		msg.setMessageType(7);
+		msg.setSenderId(accountId);
 		msg.setLeftLeafSet(leftLeafSet);
-		msg.setAddress(nodesMap.get(msg.getQueryAccountId()));
+		msg.setAddress(msg.getNodesMap().get(msg.getQueryAccountId()));
 		pastryWriter.forwardMessage(msg);
 	}
 	

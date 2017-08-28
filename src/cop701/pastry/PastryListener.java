@@ -21,7 +21,7 @@ public class PastryListener {
 		if (inObject instanceof Message) {
 			Message m = (Message)inObject;
 			logger.info("Pastry message received");
-			
+			System.out.println("**** " + m.getAddress() + " received from " + m.getSenderId() + " msg type of " + m.getMessageType());
 			if(m.getMessageType()==1)
 			{
 				this.pastry.sendNodesMap(m);
@@ -36,7 +36,7 @@ public class PastryListener {
 			}
 			else if(m.getMessageType()==5)
 			{
-				this.pastry.routeToNode(m.getSenderId(), m, m.getQueryAccountId());
+				this.pastry.routeToNode(m);
 			}
 			else if(m.getMessageType()==6)
 			{

@@ -14,6 +14,10 @@ public class Message implements Serializable {
 	 */
 	private static final long serialVersionUID = -8179684450336870390L;
 	private String senderId;
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
+	}
+
 	private Address address;
 	private String queryAccountId;
 
