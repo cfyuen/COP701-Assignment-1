@@ -1,7 +1,5 @@
 from mininet.cli import CLI
 from mininet.term import makeTerm
-import random
-import string
 import time
 
 def startall( self, line ):

@@ -200,6 +200,10 @@ public class Client {
 		return ledger.getTotalAmountOf(accountId);		
 	}
 	
+	public String getLedgerHashCode() {
+		return ledger.getHashCode();
+	}
+	
 	public void handleTransactionResponse(TransactionResponse tr)
 	{
 		for(Transaction t:inProgressTransactions)
@@ -227,6 +231,7 @@ public class Client {
 		if (accountId.equals("0001")) {
 			Transaction t = new Transaction();
 			t.setTransactionId("N" + accountId + "T" + String.valueOf(transactionCounter));
+			transactionCounter += 2;
 			t.setAmount(10000.0);
 			t.setSenderId(accountId);
 			t.setReceiverId(accountId);
@@ -292,5 +297,6 @@ public class Client {
 		
 		return true;
 	}
+
 
 }
