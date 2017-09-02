@@ -16,7 +16,7 @@ import cop701.node.Transaction;
 
 public class Master {
 
-	private static final int CLIENT_COUNT = 5;
+	private static final int CLIENT_COUNT = 7;
 	private static List<Client> clients;
 	
 	/**
