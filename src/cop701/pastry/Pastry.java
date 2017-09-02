@@ -72,13 +72,15 @@ public class Pastry {
 		// 1. Iterate leaf set
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				sendKey(senderId,pkMap.get(leaf),queryAccountId);
+				getRemote(senderId,leaf,queryAccountId);
+				//sendKey(senderId,pkMap.get(leaf),queryAccountId);
 				return;
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
-				sendKey(senderId,pkMap.get(leaf),queryAccountId);
+				getRemote(senderId,leaf,queryAccountId);
+				//sendKey(senderId,pkMap.get(leaf),queryAccountId);
 				return;
 			}
 		}
@@ -110,6 +112,7 @@ public class Pastry {
 	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
 		
 		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
+		 m.setMessageType(6);
 		 pastryWriter.forwardMessage(m);
 	}
 	

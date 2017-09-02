@@ -24,12 +24,10 @@ public class ClientListener extends Thread {
 	
 	private Client client;
 	private Socket socket; 
-	private List<SignedObject> inProgressMessage;
 	
 	public ClientListener(Client client, Socket socket) {
 		this.client = client;
 		this.socket = socket;
-		inProgressMessage = new ArrayList<SignedObject>(); 
 	}
 	
 	public void run() {
@@ -59,7 +57,7 @@ public class ClientListener extends Thread {
 	}
 
 	private void processSignedObject(SignedObject inObject) throws ClassNotFoundException, IOException {
-		inProgressMessage.add(inObject);
+		client.getInProgressMessage().add(inObject);
 		getPublicKeyFromPastry(this.client.getAccount(),getInputAccountId(inObject));
 	}
 
@@ -89,7 +87,7 @@ public class ClientListener extends Thread {
 	public List<Object> checkKey(PublicKey publicKey, String accountId) throws ClassNotFoundException, IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException
 	{
 		List<Object> verifiedObjects = new ArrayList<Object>();
-		for(Iterator<SignedObject> it = inProgressMessage.iterator(); it.hasNext();)
+		for(Iterator<SignedObject> it = client.getInProgressMessage().iterator(); it.hasNext();)
 		{
 			SignedObject so = it.next();
 			if((getInputAccountId(so).equals(accountId)))
