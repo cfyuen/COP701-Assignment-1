@@ -39,8 +39,10 @@ public class Pastry {
 	
 	private Address bootstrapAddress = new Address("10.0.0.1",42000);
 	
-	public Pastry(String accountId,Map<String, Address> nodesMap) throws IOException {
+	public Pastry(String accountId,Map<String, Address> nodesMap, PublicKey publicKey) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
+		pkMap.put(accountId, publicKey);
+		
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
 		System.out.println("[" + accountId + "] NodesMap " + nodesMap.size());
@@ -65,35 +67,44 @@ public class Pastry {
 		// 0. Check if key is the node itself
 		if (queryAccountId.equals(accountId)) {
 			sendKey(senderId,pkMap.get(accountId),queryAccountId);
+			return;
 		}
 		// 1. Iterate leaf set
 		for (String leaf : leftLeafSet) {
 			if (queryAccountId.equals(leaf)) {
 				sendKey(senderId,pkMap.get(leaf),queryAccountId);
+				return;
 			}
 		}
 		for (String leaf : rightLeafSet) {
 			if (queryAccountId.equals(leaf)) {
 				sendKey(senderId,pkMap.get(leaf),queryAccountId);
+				return;
 			}
 		}
 		// 2. Find in routing table
 		int l = longestPrefix(queryAccountId,accountId);
 		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l)-'0')];
 		if (!(route == null))
+		{
 			getRemote(senderId,route,queryAccountId);
+			return;
+		}
+			
 		
 		else {
-			// FIXME implement according to specifications
 			logger.warning("Going into the rare case");
 			for (int i=l; i<L; ++i) {
 				 for(int j=Integer.valueOf(queryAccountId.charAt(l)-'0')+1; j<Math.pow(2, B); ++j)
 					 if(routingTable[i][j]!=null)
+					 {
 						 getRemote(senderId,routingTable[i][j],queryAccountId);
-						 
+						 return;
+					 }
 			}
+			getRemote(senderId,routingTable[l][0],queryAccountId);	
+			return;
 		}
-		logger.warning("Should not reach here");
 	}
 	
 	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {

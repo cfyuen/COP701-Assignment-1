@@ -69,7 +69,7 @@ public class Client {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 	
-		pastry = new Pastry(accountId,nodesMap);
+		pastry = new Pastry(accountId,nodesMap,publicKey);
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {
