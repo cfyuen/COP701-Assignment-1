@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 //import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -142,13 +143,20 @@ public class Client {
 	}
 	
 	public void listenTransaction(Transaction transaction) {
-		TransactionResponse response = new TransactionResponse();
-		response.setTransactionId(transaction.getTransactionId());
+		boolean val = new Random().nextInt(10) == 0;
+		//val has 10% probability of being true
+		if(!val)
+		{	
+			TransactionResponse response = new TransactionResponse();
+			response.setTransactionId(transaction.getTransactionId());
 
-		response.setTransactionValid(true);
+			response.setTransactionValid(true);
 
-		System.out.println("Node " + this.accountId + ":  Writing object " + response.getClass().getSimpleName() + " to node " + transaction.getSenderId() + " [id: " + response.getTransactionId() + "]");
-		clientWriter.sendObject(transaction.getSenderId(), response);
+			System.out.println("Node " + this.accountId + ":  Writing object " + response.getClass().getSimpleName() + " to node " + transaction.getSenderId() + " [id: " + response.getTransactionId() + "]");
+			clientWriter.sendObject(transaction.getSenderId(), response);
+		}
+		else
+			System.out.println(transaction.getTransactionId()+" is rejected by "+ accountId);
 	}
 	
 	public void receiveBroadcast(Transaction transaction) {

@@ -75,7 +75,7 @@ public class Master {
 		//initializeLedger();
 
 		//clients.get(0).initiateTransaction(2.0,"0002","0003");
-
+		
 
 	}
 
