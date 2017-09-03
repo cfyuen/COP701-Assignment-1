@@ -58,7 +58,7 @@ public class ClientListener extends Thread {
 
 	private void processSignedObject(SignedObject inObject) throws ClassNotFoundException, IOException {
 		client.getInProgressMessage().add(inObject);
-		getPublicKeyFromPastry(this.client.getAccount(),getInputAccountId(inObject));
+		getPublicKeyFromPastry(this.client.getAccount(),this.client.getPublicKey(),getInputAccountId(inObject));
 	}
 
 	private void processMessage(Message inObject) {
@@ -80,7 +80,7 @@ public class ClientListener extends Thread {
 			this.client.getPastry().getPastryListener().doStuff(inObject);
 	}
 
-	public void getPublicKeyFromPastry(String senderId, String accountId) {
+	public void getPublicKeyFromPastry(String senderId, PublicKey senderPublicKey, String accountId) {
 		client.getPastry().get(senderId,accountId);
 	}
 	
