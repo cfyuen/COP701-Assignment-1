@@ -1,4 +1,9 @@
 package cop701.node;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -13,7 +18,7 @@ public class Ledger {
 		ledger= new ArrayList<Transaction>();
 	}
 	
-	public boolean verify_transaction(Transaction transaction){
+	public boolean verifyTransaction(Transaction transaction){
 		//TODO: verify if input transaction does not contain more than 1 transaction with same transaction id 
 		String p;
 		double calculated_amount=0;
@@ -90,10 +95,13 @@ public class Ledger {
 		invalidateInputTransactions(transaction);
 		return true;
 	}
+	
 	public void addTransaction(Transaction transaction){
+		transaction.setValid(true);
 		ledger.add(transaction);
 		System.out.println(transaction.getTransactionId()+"Successfully Added");
 	}
+	
 	public void invalidateInputTransactions(Transaction transaction)
 	{
 		ListIterator<String> itr=transaction.getInputTransactions().listIterator();
@@ -115,6 +123,52 @@ public class Ledger {
 			}
 		}
 	}
+	
+	public double getTotalAmountOf(String accountId) {
+		Double amount = 0.0;
+		ListIterator<Transaction> itr_ledger=ledger.listIterator();
+		while(itr_ledger.hasNext()) {
+			Transaction t=itr_ledger.next();
+			if(t.isValid() && t.getReceiverId().equals(accountId))
+				amount +=t.getAmount();
+		}
+		return amount;
+	}
+	
+	public String getHashCode() {
+		// Hashing using SHA 256
+		String hash = null;
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			
+			ByteArrayOutputStream byteos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(byteos);
+			oos.writeObject(this.ledger);
+			oos.close();
+			
+			md.update(byteos.toByteArray());
+			byte[] bytes = md.digest();
+			
+			StringBuilder sbtohex = new StringBuilder();
+		    for(byte b : bytes) {
+		    	sbtohex.append(String.format("%02x", b));
+		    }
+		    hash = sbtohex.toString();
+			
+		} catch (NoSuchAlgorithmException | IOException e) {
+			e.printStackTrace();
+		}
+		return hash;
+		
+	}
+	
+	public void printTransactions() {
+		for (Transaction t : ledger) {
+			t.print();
+		}
+		System.out.println("Total = " + ledger.size() + " transactions.");
+	}
+	
 	public List<Transaction> getLedger() {
 		return ledger;
 	}

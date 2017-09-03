@@ -99,4 +99,23 @@ public class Transaction extends BaseMessage {
 	public void setValid(boolean valid) {
 		this.valid = valid;
 	}
+	
+	public void print() {
+		System.out.print("Id:" + transactionId);
+		System.out.print(" Sender:" + senderId);
+		System.out.print(" Receiver:" + receiverId);
+		System.out.print(" Witness:" + witnessId);
+		System.out.print(" Amount:" + amount);
+		System.out.print(" InputTransactions:");
+		if (inputTransactions == null) {
+			System.out.print("null ");
+		}
+		else {
+			for (String it : inputTransactions) {
+				System.out.print(it+" ");
+			}
+		}
+		System.out.print("Valid:" + valid);
+		System.out.println();
+	}
 }

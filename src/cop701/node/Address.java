@@ -1,9 +1,14 @@
 package cop701.node;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 
-public class Address {
+public class Address implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7635698097272647888L;
 	private String ip;
 	private Integer port;
 	
@@ -22,6 +27,14 @@ public class Address {
 	}
 	public Integer getPort() {
 		return port;
+	}
+	
+	public String toString() {
+		return ip + ":" + port.toString();
+	}
+	
+	public boolean equals(Address a) {
+		return (a.ip.equals(this.ip)) && (a.port.equals(this.port));
 	}
 	
 }
