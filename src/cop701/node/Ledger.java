@@ -97,6 +97,7 @@ public class Ledger {
 	}
 	
 	public void addTransaction(Transaction transaction){
+		transaction.setValid(true);
 		ledger.add(transaction);
 		System.out.println(transaction.getTransactionId()+"Successfully Added");
 	}
@@ -159,6 +160,13 @@ public class Ledger {
 		}
 		return hash;
 		
+	}
+	
+	public void printTransactions() {
+		for (Transaction t : ledger) {
+			t.print();
+		}
+		System.out.println("Total = " + ledger.size() + " transactions.");
 	}
 	
 	public List<Transaction> getLedger() {

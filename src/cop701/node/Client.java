@@ -1,7 +1,7 @@
 package cop701.node;
 
 import cop701.common.Util;
-import cop701.node.ClientUI;
+//import cop701.node.ClientUI;
 import cop701.pastry.Pastry;
 
 import java.io.IOException;
@@ -16,11 +16,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.LogManager;
+//import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Client {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(Client.class.getName());
 	
 	public static final int LISTENER_PORT = 42000;
@@ -205,6 +206,23 @@ public class Client {
 	
 	public String getLedgerHashCode() {
 		return ledger.getHashCode();
+	}
+	
+	public void printLedger() {
+		System.out.println("Ledger for account " + accountId);
+		ledger.printTransactions();
+	}
+	
+	public void printRoutingTable() {
+		pastry.printRoutingTable();
+	}
+	
+	public void printLeafSet() {
+		pastry.printLeafSet();
+	}
+	
+	public void printNodesMap() {
+		pastry.printNodesMap();
 	}
 	
 	public void handleTransactionResponse(TransactionResponse tr)

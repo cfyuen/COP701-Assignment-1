@@ -30,6 +30,9 @@ public class ClientController {
 				else if (token[0].equals("hash")) {
 					hash(token);
 				}
+				else if (token[0].equals("print")) {
+					print(token);
+				}
 				else {
 					System.out.println("Unrecognized commands");
 				}
@@ -42,6 +45,7 @@ public class ClientController {
 		System.out.println("send [receiver account] [witness account] [amount] - Initiate transaction");
 		System.out.println("query [account] - Query the amount of bitcoins for account");
 		System.out.println("hash - Print the hash code of the ledger of the current node");
+		System.out.println("print [ledger(lg)|routingtable(rt)|leafset(ls)|nodemap(nm)] - Print the ledger / routing table / leaf set of the current node");
 		System.out.println();
 	}
 	
@@ -67,6 +71,28 @@ public class ClientController {
 		try {
 			String hash = client.getLedgerHashCode();
 			System.out.println("Account " + client.getAccount() + " ledger's hash code = " + hash);
+		} catch (Exception e) {
+			System.out.println("Please follow the help example");
+		}
+	}
+	
+	public void print(String[] token) {
+		try {
+			if (token[1].equals("ledger") || token[1].equals("lg")) {
+				client.printLedger();
+			}
+			else if (token[1].equals("routingtable") || token[1].equals("rt")) {
+				client.printRoutingTable();
+			}
+			else if (token[1].equals("leafset") || token[1].equals("ls")) {
+				client.printLeafSet();
+			}
+			else if (token[1].equals("nodemap") || token[1].equals("nm")) {
+				client.printNodesMap();
+			}
+			else {
+				System.out.println("Unknown print command");
+			}
 		} catch (Exception e) {
 			System.out.println("Please follow the help example");
 		}

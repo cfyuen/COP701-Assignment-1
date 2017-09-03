@@ -45,8 +45,7 @@ public class Pastry {
 		
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
-		System.out.println("[" + accountId + "] NodesMap " + nodesMap.size());
-		System.out.println(nodesMap.keySet().toString());
+		printNodesMap();
 		routingTable = new String[L][(int)Math.pow(2, B)];
 		neighborhoodSet = new ArrayList<String>();
 		leftLeafSet = new ArrayList<String>();
@@ -144,7 +143,6 @@ public class Pastry {
 	public void nodeInitialization() throws UnknownHostException, SocketException
 	{
 		Address address=nodesMap.get(accountId);
-		System.out.println(address.toString());
 		if(!(address.equals(bootstrapAddress)))
 		{
 			Message message=new Message(accountId,bootstrapAddress,null);
@@ -186,11 +184,6 @@ public class Pastry {
 			if (!(nextHop == null))
 			{
 				System.out.println("nextHop found l:" + l);
-				/*for (int i=0; i<L; ++i) {
-					 for(int j=0; j<Math.pow(2, B); ++j)
-						 System.out.print(routingTable[i][j] + " ");
-					 System.out.println();
-				}*/
 				forwardRequest(nextHop,msg,destination);
 			}
 			else
@@ -199,9 +192,6 @@ public class Pastry {
 				{
 					if(leftLeafSet.get(0).compareTo(destination)>0||leftLeafSet.get(0).equals("0001"))
 					{
-						if (leftLeafSet.get(0).equals("0001")) {
-							System.out.println("["+accountId+"] Hello");
-						}
 						Message newMsg=new Message(accountId,nodesMap.get(leftLeafSet.get(0)),destination);
 						newMsg.setMessageType(8);
 						newMsg.setNodesMap(msg.getNodesMap());
@@ -276,12 +266,8 @@ public class Pastry {
 				leftLeafSet.add(msg.getLeftLeafSet().get(0));
 			}
 		}
-		System.out.println("["+ accountId +"] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
-		for (int i=0; i<L; ++i) {
-			 for(int j=0; j<Math.pow(2, B); ++j)
-				 System.out.print(routingTable[i][j] + " ");
-			 System.out.println();
-		}
+		printLeafSet();
+		printRoutingTable();
 		
 		msg.setSenderId(accountId);
 		msg.setNodesMap(nodesMap);
@@ -301,7 +287,6 @@ public class Pastry {
 		System.out.println("["+ accountId +"] [Added left] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
 		
 		addToRoutingTable(message.getSenderId());
-		System.out.println(nodesMap);
 	}
 	
 	private List<String> sortLeafSet(String accountId, List<String> leafSet) {
@@ -321,8 +306,6 @@ public class Pastry {
 	public void addNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
-		//System.out.println(nodesMap);
-		//System.out.println("AddNodesMap [" + accountId + "]" + nodesMap);
 	}
 	
 	public void addToRoutingTable(String id)
@@ -333,12 +316,7 @@ public class Pastry {
 		if(routingTable[l][Integer.valueOf(id.charAt(l)-'0')]==null)
 		{
 			routingTable[l][Integer.valueOf(id.charAt(l)-'0')]=id;
-			System.out.println("["+ accountId +"]");
-			for (int i=0; i<L; ++i) {
-				 for(int j=0; j<Math.pow(2, B); ++j)
-					 System.out.print(routingTable[i][j] + " ");
-				 System.out.println();
-			}
+			printRoutingTable();
 		}
 	}
 	public void addToLeftLeafSet(String newNodeId)
@@ -383,8 +361,23 @@ public class Pastry {
 		pastryWriter.forwardMessage(msg);
 	}
 	
-
-
+	public void printRoutingTable() {
+		System.out.println("["+ accountId +"] Routing Table");
+		for (int i=0; i<L; ++i) {
+			 for(int j=0; j<Math.pow(2, B); ++j)
+				 System.out.print(routingTable[i][j] + " ");
+			 System.out.println();
+		}
+	}
+	
+	public void printLeafSet() {
+		System.out.println("["+ accountId +"] Leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
+	}
+	
+	public void printNodesMap() {
+		System.out.println("[" + accountId + "] NodesMap (size: " + nodesMap.size() + ")");
+		System.out.println(nodesMap);
+	}
 
 	public PastryListener getPastryListener() {
 		return pastryListener;
