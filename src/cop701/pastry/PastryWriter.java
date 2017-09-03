@@ -26,7 +26,7 @@ public class PastryWriter {
 			recipientSocket.close();
 		}
 		catch (IOException e) {
-			logger.warning("PastryWriter has some issues while writing to socket");
+			logger.warning("Host Not Found");
 			e.printStackTrace();
 		}
 	}
