@@ -2,6 +2,7 @@ package cop701.pastry;
 
 import java.security.PublicKey;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,14 +15,13 @@ public class Message implements Serializable {
 	 */
 	private static final long serialVersionUID = -8179684450336870390L;
 	private String senderId;
-	public void setSenderId(String senderId) {
-		this.senderId = senderId;
-	}
-
 	private Address address;
 	private String queryAccountId;
 
+	private Map<String, PublicKey> senderPkMap;
+	private PublicKey senderPublicKey;
 	private PublicKey pk;
+	
 	private int messageType;/*1:when a sender sends a request to ask for nodesMap
 	 						  2:when a nodes returns the nodesMap
 	 						  3:for routing a message to a particular accountId
@@ -42,6 +42,12 @@ public class Message implements Serializable {
 		this.address = address;
 		this.queryAccountId = queryAccountId;
 		pk=null;
+		this.senderPublicKey = null;
+		this.senderPkMap = new HashMap<String, PublicKey>();
+	}
+	
+	public void setSenderId(String senderId) {
+		this.senderId = senderId;
 	}
 	
 	public String[][] getRoutingTable() {
@@ -116,5 +122,21 @@ public class Message implements Serializable {
 	
 	public Map<String,Address> getNodesMap() {
 		return nodesMap;
+	}
+
+	public PublicKey getSenderPublicKey() {
+		return senderPublicKey;
+	}
+
+	public void setSenderPublicKey(PublicKey senderPublicKey) {
+		this.senderPublicKey = senderPublicKey;
+	}
+
+	public Map<String, PublicKey> getSenderPkMap() {
+		return senderPkMap;
+	}
+
+	public void setSenderPkMap(Map<String, PublicKey> senderPkMap) {
+		this.senderPkMap = senderPkMap;
 	}
 }
