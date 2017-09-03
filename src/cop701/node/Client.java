@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ public class Client {
 	private Address address;
 	private ServerSocket serverSocket;
 	private List<Transaction> inProgressTransactions;
+	private List<SignedObject> inProgressMessage;
 	private Integer transactionCounter;
 	private ClientWriter clientWriter;
 	private Ledger ledger;
@@ -61,6 +63,7 @@ public class Client {
 		this.address = new Address(ip, serverSocket.getLocalPort());
 		nodesMap.put(accountId, address);
 		inProgressTransactions = new ArrayList<Transaction>();
+		inProgressMessage = new ArrayList<SignedObject>(); 
 		transactionCounter = 0;
 		ledger = new Ledger();
 		initializeLedger();
@@ -69,7 +72,7 @@ public class Client {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 	
-		pastry = new Pastry(accountId,nodesMap);
+		pastry = new Pastry(accountId,nodesMap,publicKey);
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {
@@ -228,17 +231,16 @@ public class Client {
 	}
 	
 	private void initializeLedger() {
+		Transaction t = new Transaction();
+		t.setTransactionId("N0001T0");
+		t.setAmount(10000.0);
+		t.setSenderId("0001");
+		t.setReceiverId("0001");
+		t.setWitnessId("0001");
+		t.setValid(true);
+		ledger.addTransaction(t);
 		if (accountId.equals("0001")) {
-			Transaction t = new Transaction();
-			t.setTransactionId("N" + accountId + "T" + String.valueOf(transactionCounter));
 			transactionCounter += 2;
-			t.setAmount(10000.0);
-			t.setSenderId(accountId);
-			t.setReceiverId(accountId);
-			t.setWitnessId(accountId);
-			t.setValid(true);
-			
-			ledger.addTransaction(t);
 		}
 	}
 	
@@ -262,6 +264,10 @@ public class Client {
 		return ledger;
 	}
 
+	public List<SignedObject> getInProgressMessage() {
+		return inProgressMessage;
+	}
+
 	public PrivateKey getPrivateKey() {
 		return privateKey;
 	}
@@ -283,7 +289,7 @@ public class Client {
 		while(itr.hasNext() && cal_amt < transaction.getAmount())
 		{
 			Transaction t = itr.next();
-			if(t.isValid() && t.getReceiverId()==this.accountId)
+			if(t.isValid() && t.getReceiverId().equals(this.accountId))
 			{
 				cal_amt+=t.getAmount();
 				newList.add(t.getTransactionId());
