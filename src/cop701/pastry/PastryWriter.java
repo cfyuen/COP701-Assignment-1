@@ -15,7 +15,7 @@ public class PastryWriter {
 	public PastryWriter() {
 	}
 
-	public void forwardMessage(Message m) {
+	public boolean forwardMessage(Message m) {
 		Socket recipientSocket;
 		ObjectOutputStream outputStream;
 		
@@ -26,9 +26,12 @@ public class PastryWriter {
 			recipientSocket.close();
 		}
 		catch (IOException e) {
-			logger.warning("PastryWriter has some issues while writing to socket");
-			e.printStackTrace();
+			logger.warning("PastryWriter has some issues while writing to socket, probably the host is down");
+			System.out.println("PastryWriter failed from " + m.getSenderId() + " to " + m.getAddress());
+			//e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	
 }

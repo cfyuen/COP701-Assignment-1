@@ -88,31 +88,57 @@ public class Pastry {
 		String route = routingTable[l][Integer.valueOf(queryAccountId.charAt(l)-'0')];
 		if (!(route == null))
 		{
-			getRemote(senderId,route,queryAccountId);
-			return;
+			if (getRemote(senderId,route,queryAccountId)) return;
+			else routingTable[l][Integer.valueOf(queryAccountId.charAt(l)-'0')] = null;
 		}
-			
 		
-		else {
-			logger.warning("Going into the rare case");
-			for (int i=l; i<L; ++i) {
-				 for(int j=Integer.valueOf(queryAccountId.charAt(l)-'0')+1; j<Math.pow(2, B); ++j)
-					 if(routingTable[i][j]!=null)
-					 {
-						 getRemote(senderId,routingTable[i][j],queryAccountId);
-						 return;
-					 }
-			}
-			getRemote(senderId,routingTable[l][0],queryAccountId);	
-			return;
+		// 3. Going into the rare case
+		logger.warning("Going into the rare case");
+		List<String> allRoutes = new ArrayList<String>();
+		for (int i=l; i<L; ++i) {
+			 for(int j=0; j<Math.pow(2, B); ++j) 
+				 if(routingTable[i][j]!=null)
+				 {
+					 allRoutes.add(routingTable[i][j]);
+				 }
 		}
+		allRoutes.addAll(leftLeafSet);
+		allRoutes.addAll(rightLeafSet);
+		
+		boolean routeSuccess = false;
+		while (!routeSuccess && !allRoutes.isEmpty()) {
+			String bestMatch = null;
+			for (String r : allRoutes) {
+				int rl = longestPrefix(queryAccountId, r);
+				if (rl > l) {
+					l = rl;
+					bestMatch = r;
+				}
+				else if (rl == l) {
+					if (bestMatch == null) 
+						bestMatch = r;
+					else {
+						int bestDiff = Math.abs(Integer.valueOf(queryAccountId)-Integer.valueOf(bestMatch));
+						int rDiff = Math.abs(Integer.valueOf(queryAccountId)-Integer.valueOf(r));
+						if (rDiff < bestDiff)
+							bestMatch = r;
+					}
+				}
+			}
+			routeSuccess = getRemote(senderId,bestMatch,queryAccountId);
+			if (!routeSuccess) {
+				allRoutes.remove(bestMatch);
+			}
+		}
+		if (routeSuccess) return;
+		logger.warning("Not going anywhere");
 	}
 	
-	public void getRemote(String senderId, String nextAccountId, String queryAccountId) {
+	public boolean getRemote(String senderId, String nextAccountId, String queryAccountId) {
 		
 		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
 		 m.setMessageType(6);
-		 pastryWriter.forwardMessage(m);
+		 return pastryWriter.forwardMessage(m);
 	}
 	
 	public void sendKey(String senderId, PublicKey pk, String queryAccountId)
@@ -120,11 +146,6 @@ public class Pastry {
 		Message m = new Message(senderId,nodesMap.get(senderId),queryAccountId);
 		m.setPk(pk);
 		pastryWriter.forwardMessage(m);
-	}
-	
-	// Legacy method
-	public PublicKey getOld(String queryAccountId) {
-		return pkMap.get(queryAccountId);
 	}
 	
 	public void put(String key, PublicKey value) {
@@ -177,64 +198,70 @@ public class Pastry {
 		System.out.println("["+accountId+"] routing to "+destination+" with "+leftLeafSet);
 		if (destination.equals(accountId)) {
 			System.out.println("Boomerang");
+			return;
 		}
-		else {
-			int l = longestPrefix(destination,accountId);
-			String nextHop = routingTable[l][Integer.valueOf(destination.charAt(l)-'0')];
-			if (!(nextHop == null))
-			{
-				System.out.println("nextHop found l:" + l);
-				forwardRequest(nextHop,msg,destination);
+		
+		int l = longestPrefix(destination,accountId);
+		String nextHop = routingTable[l][Integer.valueOf(destination.charAt(l)-'0')];
+		boolean routeSuccess = false;
+		if (!(nextHop == null))
+		{
+			// Case 1: Routing table forward
+			System.out.println("nextHop found l:" + l);
+			routeSuccess = forwardRequest(nextHop,msg,destination);
+			if (routeSuccess) return;
+			else routingTable[l][Integer.valueOf(destination.charAt(l)-'0')] = null;
+		}
+		
+		if (leftLeafSet.isEmpty()) {
+			// Case 2: Special case for node 0001
+			Message newMsg=new Message(accountId,msg.getNodesMap().get(destination),destination);
+			newMsg.setRoutingTable(routingTable);
+			newMsg.setRightLeafSet(rightLeafSet);
+			newMsg.setLeftLeafSet(leftLeafSet);
+			newMsg.setMessageType(7);
+			pastryWriter.forwardMessage(newMsg);
+			return;
+		}
+		
+		if(leftLeafSet.get(0).compareTo(destination)>0||leftLeafSet.get(0).equals("0001"))
+		{
+			// Case 3: Destination reached
+			int i = 0;
+			while (i < leftLeafSet.size() && !routeSuccess) {
+				Message newMsg = new Message(accountId,nodesMap.get(leftLeafSet.get(i)),destination);
+				newMsg.setMessageType(8);
+				newMsg.setNodesMap(msg.getNodesMap());
+				routeSuccess = pastryWriter.forwardMessage(newMsg);
 			}
-			else
-			{
-				if(!(leftLeafSet.isEmpty()))
-				{
-					if(leftLeafSet.get(0).compareTo(destination)>0||leftLeafSet.get(0).equals("0001"))
-					{
-						Message newMsg=new Message(accountId,nodesMap.get(leftLeafSet.get(0)),destination);
-						newMsg.setMessageType(8);
-						newMsg.setNodesMap(msg.getNodesMap());
-						pastryWriter.forwardMessage(newMsg);
-						//newMsg.setRoutingTable(routingTable);
-						newMsg.setRightLeafSet(rightLeafSet);
-						newMsg.setRoutingTable(routingTable);
-						newMsg.setAddress(msg.getNodesMap().get(destination));
-						newMsg.setMessageType(7);
-						pastryWriter.forwardMessage(newMsg);
-						/*TODO: 1)send location nd tell next node also to do that
-						 * 		2)also cope up with what happens if the initial bradcast has still no reached the next leaf node*/
-					}
-					else
-					{
-						System.out.println("nextHop NOT found " + leftLeafSet);
-						forwardRequest(leftLeafSet.get(0),msg,destination);
-					}
-				}
-				else
-				{
-					Message newMsg=new Message(accountId,msg.getNodesMap().get(destination),destination);
-					newMsg.setRoutingTable(routingTable);
-					newMsg.setRightLeafSet(rightLeafSet);
-					newMsg.setLeftLeafSet(leftLeafSet);
-					newMsg.setMessageType(7);
-					pastryWriter.forwardMessage(newMsg);
-					
-					
-				}
-			}
+			
+			Message destMsg = new Message(accountId,msg.getNodesMap().get(destination),destination);
+			destMsg.setRightLeafSet(rightLeafSet);
+			destMsg.setRoutingTable(routingTable);
+			destMsg.setMessageType(7);
+			pastryWriter.forwardMessage(destMsg);
+			/*TODO: 1)send location nd tell next node also to do that
+			 * 		2)also cope up with what happens if the initial bradcast has still no reached the next leaf node*/
+			return;
+		}
+
+		// Case 4: Routing table not up to date - just go to next node
+		System.out.println("nextHop NOT found " + leftLeafSet);
+		int i = 0;
+		while (i < leftLeafSet.size() && !routeSuccess) {
+			routeSuccess = forwardRequest(leftLeafSet.get(i),msg,destination);
 		}
 			
 	}
 	
-	public void forwardRequest(String nextHop,Message msg,String destination)
+	public boolean forwardRequest(String nextHop,Message msg,String destination)
 	{
 		System.out.println("["+accountId+"] sending msg 5 to " + nextHop + " with destination " + destination);
 		msg.setSenderId(accountId);
 		msg.setAddress(nodesMap.get(nextHop));
 		msg.setMessageType(5);
 		msg.setQueryAccountId(destination);
-		pastryWriter.forwardMessage(msg);
+		return pastryWriter.forwardMessage(msg);
 	}
 	
 	public void addDetails(Message msg)

@@ -37,8 +37,8 @@ public class ClientWriter {
 			recipientSocket.close();
 		}
 		catch (IOException | InvalidKeyException | SignatureException | NoSuchAlgorithmException e) {
-			logger.warning("ClientWriter has some issues while writing to socket");
-			e.printStackTrace();
+			logger.warning("ClientWriter has some issues while writing to socket of " + recipient);
+			//e.printStackTrace();
 		}
 	}
 	
