@@ -191,6 +191,7 @@ public class Pastry {
 						pastryWriter.forwardMessage(newMsg);
 						//newMsg.setRoutingTable(routingTable);
 						newMsg.setRightLeafSet(rightLeafSet);
+						newMsg.setRoutingTable(routingTable);
 						newMsg.setAddress(msg.getNodesMap().get(destination));
 						newMsg.setMessageType(7);
 						pastryWriter.forwardMessage(newMsg);
@@ -259,6 +260,15 @@ public class Pastry {
 				leftLeafSet.add(msg.getLeftLeafSet().get(0));
 			}
 		}
+		addToRoutingTable(msg.getSenderId());
+		for(int i=0;i <L;i++)
+		{
+			for(int y=0;y<Math.pow(2,B);y++)
+			{
+				if(msg.getRoutingTable()[i][y]!=null)
+				addToRoutingTable(msg.getRoutingTable()[i][y]);
+			}
+		}
 		msg.setSenderId(accountId);
 		msg.setNodesMap(nodesMap);
 		msg.setMessageType(4);
@@ -319,12 +329,12 @@ public class Pastry {
 		if(routingTable[l][Integer.valueOf(id.charAt(l)-'0')]==null)
 		{
 			routingTable[l][Integer.valueOf(id.charAt(l)-'0')]=id;
-		/*	System.out.println("["+ accountId +"]");
+			System.out.println("["+ accountId +"]");
 			for (int i=0; i<L; ++i) {
 				 for(int j=0; j<Math.pow(2, B); ++j)
 					 System.out.print(routingTable[i][j] + " ");
 				 System.out.println();
-			}*/
+			}
 		}
 	}
 	public void addToLeftLeafSet(String newNodeId)
@@ -375,6 +385,7 @@ public class Pastry {
 	{
 		msg.setMessageType(7);
 		msg.setSenderId(accountId);
+		msg.setRoutingTable(routingTable);
 		msg.setLeftLeafSet(leftLeafSet);
 		msg.setAddress(msg.getNodesMap().get(msg.getQueryAccountId()));
 		pastryWriter.forwardMessage(msg);
