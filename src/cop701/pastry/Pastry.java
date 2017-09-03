@@ -7,6 +7,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -182,6 +183,7 @@ public class Pastry {
 		String sender=message.getSenderId();
 		Address senderAddress=message.getNodesMap().get(sender);
 		Message responseMessage= new Message(accountId,senderAddress,null);
+		responseMessage.setSenderPublicKey(pkMap.get(accountId));
 		responseMessage.setMessageType(2);
 		responseMessage.setNodesMap(nodesMap);
 		pastryWriter.forwardMessage(responseMessage);
@@ -219,6 +221,7 @@ public class Pastry {
 			newMsg.setRoutingTable(routingTable);
 			newMsg.setRightLeafSet(rightLeafSet);
 			newMsg.setLeftLeafSet(leftLeafSet);
+			newMsg.setSenderPkMap(pkMap);
 			newMsg.setMessageType(7);
 			pastryWriter.forwardMessage(newMsg);
 			return;
@@ -237,6 +240,7 @@ public class Pastry {
 			
 			Message destMsg = new Message(accountId,msg.getNodesMap().get(destination),destination);
 			destMsg.setRightLeafSet(rightLeafSet);
+			destMsg.setSenderPkMap(pkMap);
 			destMsg.setRoutingTable(routingTable);
 			destMsg.setMessageType(7);
 			pastryWriter.forwardMessage(destMsg);
@@ -275,16 +279,31 @@ public class Pastry {
 				//routingTable=msg.getRoutingTable();
 				rightLeafSet = msg.getRightLeafSet();
 				rightLeafSet.add(msg.getSenderId());
+				
 				if (rightLeafSet.size() > L/2)
 					rightLeafSet.remove(0);
+				
+				for(int i=0;i<rightLeafSet.size();++i)
+				{
+					if(msg.getSenderPkMap().get(rightLeafSet.get(i))!=null)
+						pkMap.put(rightLeafSet.get(i),msg.getSenderPkMap().get(rightLeafSet.get(i)));
+				}
+					
 			}
 			else if(msg.getSenderId().compareTo(accountId)>0)
 			{
 				leftLeafSet = msg.getLeftLeafSet();
 				leftLeafSet.add(0, msg.getSenderId());
+				
 				if (leftLeafSet.size() > L/2)
 					leftLeafSet.remove(leftLeafSet.size()-1);
-			}
+				
+				for(int i=0;i<leftLeafSet.size();++i)
+				{	
+					if(msg.getSenderPkMap().get(leftLeafSet.get(i))!=null)
+						pkMap.put(leftLeafSet.get(i),msg.getSenderPkMap().get(leftLeafSet.get(i)));
+				}
+			}	
 		}
 		else
 		{
@@ -292,6 +311,11 @@ public class Pastry {
 			{
 				System.out.println("["+ accountId +"] message received from" + msg.getSenderId());
 				leftLeafSet.add(msg.getLeftLeafSet().get(0));
+				for(int i=0;i<leftLeafSet.size();++i)
+				{
+					if(msg.getSenderPkMap().get(leftLeafSet.get(i))!=null)
+						pkMap.put(leftLeafSet.get(i),msg.getSenderPkMap().get(leftLeafSet.get(i)));
+				}
 			}
 		}
 
@@ -311,6 +335,7 @@ public class Pastry {
 		
 		printLeafSet();
 		printRoutingTable();
+		printPkMap();
 	}
 	
 	public void addBroadcastNodesMap(Message message)
@@ -319,9 +344,11 @@ public class Pastry {
 		nodesMap.putAll(message.getNodesMap());
 		
 		addToRightLeafSet(message.getSenderId());
+		pkMap.put(message.getSenderId(), message.getSenderPublicKey());
 		System.out.println("["+ accountId +"] [Added right] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
 		
 		addToLeftLeafSet(message.getSenderId());
+		pkMap.put(message.getSenderId(), message.getSenderPublicKey());
 		System.out.println("["+ accountId +"] [Added left] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
 		
 		addToRoutingTable(message.getSenderId());
@@ -344,6 +371,18 @@ public class Pastry {
 	public void addNodesMap(Message message)
 	{
 		nodesMap.putAll(message.getNodesMap());
+		
+		for(int i=0;i<leftLeafSet.size();++i)
+		{
+			if(message.getSenderPkMap().get(leftLeafSet.get(i))!=null)
+				pkMap.put(leftLeafSet.get(i),message.getSenderPkMap().get(leftLeafSet.get(i)));
+		}
+		
+		for(int i=0;i<rightLeafSet.size();++i)
+		{
+			if(message.getSenderPkMap().get(rightLeafSet.get(i))!=null)
+				pkMap.put(rightLeafSet.get(i),message.getSenderPkMap().get(rightLeafSet.get(i)));
+		}
 	}
 	
 	public void addToRoutingTable(String id)
@@ -381,6 +420,7 @@ public class Pastry {
 			for(String  key:nodesMap.keySet())
 			{
 				Message msg=new Message(accountId,nodesMap.get(key),null);
+				msg.setSenderPublicKey(pkMap.get(accountId));
 				msg.setMessageType(4);
 				Map<String,Address> newNodeInfo=new HashMap<String,Address>();
 				newNodeInfo.put(accountId,nodesMap.get(accountId));
@@ -396,6 +436,7 @@ public class Pastry {
 		msg.setSenderId(accountId);
 		msg.setRoutingTable(routingTable);
 		msg.setLeftLeafSet(leftLeafSet);
+		msg.setSenderPkMap(pkMap);
 		msg.setAddress(msg.getNodesMap().get(msg.getQueryAccountId()));
 		pastryWriter.forwardMessage(msg);
 	}
@@ -416,6 +457,17 @@ public class Pastry {
 	public void printNodesMap() {
 		System.out.println("[" + accountId + "] NodesMap (size: " + nodesMap.size() + ")");
 		System.out.println(nodesMap);
+	}
+	
+	public void printPkMap() {
+		System.out.println("Printing Public keys of"+accountId+"\n");
+		Iterator<String> it = pkMap.keySet().iterator();
+		while(it.hasNext())
+		{
+			String key = it.next();
+			PublicKey value = pkMap.get(key);
+			System.out.println(key+" : "+value);
+		}			
 	}
 
 	public PastryListener getPastryListener() {
