@@ -198,6 +198,7 @@ public class Pastry {
 						pastryWriter.forwardMessage(newMsg);
 						//newMsg.setRoutingTable(routingTable);
 						newMsg.setRightLeafSet(rightLeafSet);
+						newMsg.setRoutingTable(routingTable);
 						newMsg.setAddress(msg.getNodesMap().get(destination));
 						newMsg.setMessageType(7);
 						pastryWriter.forwardMessage(newMsg);
@@ -266,13 +267,23 @@ public class Pastry {
 				leftLeafSet.add(msg.getLeftLeafSet().get(0));
 			}
 		}
-		printLeafSet();
-		printRoutingTable();
-		
+
+		addToRoutingTable(msg.getSenderId());
+		for(int i=0;i <L;i++)
+		{
+			for(int y=0;y<Math.pow(2,B);y++)
+			{
+				if(msg.getRoutingTable()[i][y]!=null)
+				addToRoutingTable(msg.getRoutingTable()[i][y]);
+			}
+		}
 		msg.setSenderId(accountId);
 		msg.setNodesMap(nodesMap);
 		msg.setMessageType(4);
 		broadcast(msg);
+		
+		printLeafSet();
+		printRoutingTable();
 	}
 	
 	public void addBroadcastNodesMap(Message message)
@@ -356,6 +367,7 @@ public class Pastry {
 	{
 		msg.setMessageType(7);
 		msg.setSenderId(accountId);
+		msg.setRoutingTable(routingTable);
 		msg.setLeftLeafSet(leftLeafSet);
 		msg.setAddress(msg.getNodesMap().get(msg.getQueryAccountId()));
 		pastryWriter.forwardMessage(msg);
