@@ -232,6 +232,10 @@ public class Client {
 		pastry.printLeafSet();
 	}
 	
+	public void printNeighborhoodSet() {
+		pastry.printNeighborhoodSet();
+	}
+	
 	public void printNodesMap() {
 		pastry.printNodesMap();
 	}

@@ -519,6 +519,11 @@ public class Pastry {
 		System.out.println("["+ accountId +"] Leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
 	}
 	
+	public void printNeighborhoodSet() {
+		System.out.println("["+ accountId +"] Neighborhood set");
+		System.out.println(neighborhoodSet);
+	}
+	
 	public void printNodesMap() {
 		System.out.println("[" + accountId + "] NodesMap (size: " + nodesMap.size() + ")");
 		System.out.println(nodesMap);
