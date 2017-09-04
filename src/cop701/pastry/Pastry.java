@@ -295,6 +295,7 @@ public class Pastry {
 			int i = 0;
 			while (i < leftLeafSet.size() && !routeSuccess) {
 				Message newMsg = new Message(accountId,nodesMap.get(leftLeafSet.get(i)),destination);
+				i++;
 				newMsg.setMessageType(8);
 				newMsg.setNodesMap(msg.getNodesMap());
 				routeSuccess = pastryWriter.forwardMessage(newMsg);
@@ -316,6 +317,7 @@ public class Pastry {
 		int i = 0;
 		while (i < leftLeafSet.size() && !routeSuccess) {
 			routeSuccess = forwardRequest(leftLeafSet.get(i),msg,destination);
+			i++;
 		}
 			
 	}
