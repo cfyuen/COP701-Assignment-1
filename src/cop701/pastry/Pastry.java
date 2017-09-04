@@ -94,7 +94,7 @@ public class Pastry {
 		}
 		
 		// 3. Going into the rare case
-		logger.warning("Going into the rare case");
+		logger.info("Going into the rare case");
 		List<String> allRoutes = new ArrayList<String>();
 		for (int i=l; i<L; ++i) {
 			 for(int j=0; j<Math.pow(2, B); ++j) 
@@ -138,6 +138,7 @@ public class Pastry {
 	public boolean getRemote(String senderId, String nextAccountId, String queryAccountId) {
 		
 		 Message m = new Message(senderId,nodesMap.get(nextAccountId),queryAccountId);
+		 System.out.println("[Pastry] Routing " + senderId + "->...->" + accountId + "->" + nextAccountId + "->...->" + queryAccountId);
 		 m.setMessageType(6);
 		 return pastryWriter.forwardMessage(m);
 	}
@@ -460,7 +461,7 @@ public class Pastry {
 	}
 	
 	public void printPkMap() {
-		System.out.println("Printing Public keys of"+accountId+"\n");
+		System.out.println("[" + accountId + "] Printing Public keys");
 		Iterator<String> it = pkMap.keySet().iterator();
 		while(it.hasNext())
 		{

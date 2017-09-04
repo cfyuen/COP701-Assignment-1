@@ -36,8 +36,9 @@ public class ClientWriter {
 			outputStream.writeObject(so);
 			recipientSocket.close();
 		}
-		catch (IOException | InvalidKeyException | SignatureException | NoSuchAlgorithmException e) {
+		catch (Exception e) {
 			logger.warning("ClientWriter has some issues while writing to socket of " + recipient);
+			System.out.println("Probably destionation host is down");
 			//e.printStackTrace();
 		}
 	}

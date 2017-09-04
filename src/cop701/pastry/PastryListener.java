@@ -17,8 +17,8 @@ public class PastryListener {
 
 	public void doStuff(Message m) {
 		
-		logger.info("Pastry message received");
-		System.out.println("**** " + m.getAddress() + " received from " + m.getSenderId() + " msg type of " + m.getMessageType());
+		//logger.info("Pastry message received");
+		System.out.println("[Pastry Message] " + m.getAddress() + " received from " + m.getSenderId() + " msg type of " + m.getMessageType());
 		if(m.getMessageType()==1)
 		{
 			this.pastry.sendNodesMap(m);

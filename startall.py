@@ -9,7 +9,9 @@ def startall( self, line ):
 	for h in net.hosts:
 		if h.name == "h1" or random.random() < 0.8:
 			print "Start java in " , h
-			cmdLine = "java -jar ~/dev/A1.jar | tee /tmp/" + h.name + ".log"
+			shortName = h.name
+			cmdLine = 'echo -ne "\033]0;' + shortName[1:] + '\007";'
+			cmdLine += "java -jar ~/dev/A1.jar | tee /tmp/" + h.name + ".log"
 			print "  Calling command: " , cmdLine
 			# Running in foreground
 			net.terms += makeTerm(h, cmd=cmdLine)

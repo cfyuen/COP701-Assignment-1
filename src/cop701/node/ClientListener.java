@@ -31,7 +31,7 @@ public class ClientListener extends Thread {
 	}
 	
 	public void run() {
-		logger.info("Client connected on " + socket.getLocalPort());
+		//logger.info("Client connected on " + socket.getLocalPort());
 		
 		Object inObject = null;
 		

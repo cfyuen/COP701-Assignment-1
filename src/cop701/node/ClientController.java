@@ -41,11 +41,11 @@ public class ClientController {
 	}
 	
 	public void help() {
-		System.out.println("[Controller] Help");
+		System.out.println("[Controller] Help for " + client.getAccount());
 		System.out.println("send [receiver account] [witness account] [amount] - Initiate transaction");
 		System.out.println("query [account] - Query the amount of bitcoins for account");
 		System.out.println("hash - Print the hash code of the ledger of the current node");
-		System.out.println("print [ledger(lg)|routingtable(rt)|leafset(ls)|nodemap(nm)] - Print the ledger / routing table / leaf set of the current node");
+		System.out.println("print [ledger(lg)|routingtable(rt)|leafset(ls)|nodemap(nm)|publickey(pk)] - Print the ledger / routing table / leaf set of the current node");
 		System.out.println();
 	}
 	
@@ -89,6 +89,9 @@ public class ClientController {
 			}
 			else if (token[1].equals("nodemap") || token[1].equals("nm")) {
 				client.printNodesMap();
+			}
+			else if (token[1].equals("publickey") || token[1].equals("pk")) {
+				client.printPublicKeyMap();
 			}
 			else {
 				System.out.println("Unknown print command");

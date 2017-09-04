@@ -233,6 +233,10 @@ public class Client {
 		pastry.printNodesMap();
 	}
 	
+	public void printPublicKeyMap() {
+		pastry.printPkMap();
+	}
+	
 	public void handleTransactionResponse(TransactionResponse tr)
 	{
 		for(Transaction t:inProgressTransactions)
