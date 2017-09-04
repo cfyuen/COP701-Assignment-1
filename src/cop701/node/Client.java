@@ -180,13 +180,14 @@ public class Client {
 		pastry.put(accountId, pk);
 	}
 	
-	public void initiateTransaction(double amount, String receiverId, String witnessId) {
+	
+	public void initiateTransaction(double amount, String receiverId, String witnessId, List<String> inputTransactions) {
 		String transactionId = "N" + accountId + "T" + String.valueOf(transactionCounter);
 		transactionCounter += 2;
-		initiateTransaction(amount, receiverId, witnessId, transactionId);
+			initiateTransaction(amount, receiverId, witnessId, transactionId,inputTransactions);
 	}
 	
-	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId)	
+	public void initiateTransaction(double amount, String receiverId, String witnessId , String transactionId, List<String> inputTransactions )	
 	{
 		Transaction t = new Transaction();
 		t.setTransactionId(transactionId);
@@ -194,11 +195,14 @@ public class Client {
 		t.setSenderId(this.accountId);
 		t.setReceiverId(receiverId);
 		t.setWitnessId(witnessId);
+		t.setInputTransactions(inputTransactions);
+		Boolean check = true;
 		
-		boolean check = selectInputTransactions(t);
+		if(inputTransactions==null)
+			check = selectInputTransactions(t);
+		
 		if(!check)
 			System.out.println("Transaction could not be initiated due to insufficient balance");
-		
 		else
 		{	
 			inProgressTransactions.add(t);

@@ -1,5 +1,6 @@
 package cop701.node;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ClientController {
@@ -51,8 +52,17 @@ public class ClientController {
 	
 	public void send(String[] token) {
 		try {
-			Double amount = Double.valueOf(token[3]);
-			client.initiateTransaction(amount, token[1], token[2]);
+			if (token.length==4)
+			{	
+				Double amount = Double.valueOf(token[3]);
+				client.initiateTransaction(amount, token[1], token[2],null);
+			}
+			else
+			{
+				Double amount = Double.valueOf(token[3]);
+				String[] s = token[4].split(",");
+				client.initiateTransaction(amount, token[1], token[2],Arrays.asList(s));
+			}
 		} catch (Exception e) {
 			System.out.println("Please follow the help example");
 		}
