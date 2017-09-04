@@ -112,17 +112,19 @@ public class Pastry {
 		}
 		allRoutes.addAll(leftLeafSet);
 		allRoutes.addAll(rightLeafSet);
+		allRoutes.addAll(neighborhoodSet);
 		
 		boolean routeSuccess = false;
 		while (!routeSuccess && !allRoutes.isEmpty()) {
 			String bestMatch = null;
+			int bestL = l;
 			for (String r : allRoutes) {
 				int rl = longestPrefix(queryAccountId, r);
-				if (rl > l) {
-					l = rl;
+				if (rl > bestL) {
+					bestL = rl;
 					bestMatch = r;
 				}
-				else if (rl == l) {
+				else if (rl == bestL) {
 					if (bestMatch == null) 
 						bestMatch = r;
 					else {
