@@ -2,6 +2,7 @@ package cop701.node;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -10,7 +11,11 @@ import java.util.ListIterator;
 
 import cop701.node.Transaction;
 
-public class Ledger {
+public class Ledger implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7201424005500314227L;
 	private List<Transaction> ledger;
 	
 	public Ledger()

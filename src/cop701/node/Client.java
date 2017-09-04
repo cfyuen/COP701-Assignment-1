@@ -3,7 +3,6 @@ package cop701.node;
 import cop701.common.Util;
 //import cop701.node.ClientUI;
 import cop701.pastry.Pastry;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.KeyPair;
@@ -74,7 +73,7 @@ public class Client {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 	
-		pastry = new Pastry(accountId,nodesMap,publicKey);
+		pastry = new Pastry(accountId,nodesMap,publicKey,this);
 		new Thread(new Runnable() {
 			   public void run() {
 			       try {
@@ -265,6 +264,7 @@ public class Client {
 	}
 	
 	private void initializeLedger() {
+		if (!accountId.equals("0001")) return;
 		Transaction t = new Transaction();
 		t.setTransactionId("N0001T0");
 		t.setAmount(10000.0);
@@ -296,6 +296,10 @@ public class Client {
 
 	public Ledger getLedger() {
 		return ledger;
+	}
+
+	public void setLedger(Ledger ledger) {
+		this.ledger = ledger;
 	}
 
 	public List<SignedObject> getInProgressMessage() {

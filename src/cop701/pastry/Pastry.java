@@ -7,12 +7,15 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import cop701.node.Address;
+import cop701.node.Client;
 
 public class Pastry {
 
@@ -30,25 +33,28 @@ public class Pastry {
 	
 	private String accountId;
 	private Map<String,Address> nodesMap;
-	
+	private int streetNo;
 	private String[][] routingTable;
-	private List<String> neighborhoodSet;
+	private Set<String> neighborhoodSet;
+	//private List<String> neighborhoodSet;
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	private PastryWriter pastryWriter;
 	private PastryListener pastryListener;
+	private Client client;
 	
 	private Address bootstrapAddress = new Address("10.0.0.1",42000);
 	
-	public Pastry(String accountId,Map<String, Address> nodesMap, PublicKey publicKey) throws IOException {
+	public Pastry(String accountId,Map<String, Address> nodesMap, PublicKey publicKey,Client client) throws IOException {
 		pkMap = new HashMap<String, PublicKey>();
 		pkMap.put(accountId, publicKey);
-		
+	
 		this.accountId = accountId;
 		this.nodesMap = nodesMap;
+		this.client = client;
 		printNodesMap();
 		routingTable = new String[L][(int)Math.pow(2, B)];
-		neighborhoodSet = new ArrayList<String>();
+		neighborhoodSet = new HashSet<String>();
 		leftLeafSet = new ArrayList<String>();
 		rightLeafSet = new ArrayList<String>();
 		
@@ -56,7 +62,8 @@ public class Pastry {
 		pastryListener = new PastryListener(this);
 
 	}
-	
+
+
 	public void start() throws IOException {
 		pastryWriter = new PastryWriter();
 		
@@ -168,6 +175,7 @@ public class Pastry {
 		Address address=nodesMap.get(accountId);
 		if(!(address.equals(bootstrapAddress)))
 		{
+			System.out.println(accountId+"'s StreetNO: "+streetNo);
 			Message message=new Message(accountId,bootstrapAddress,null);
 			message.setMessageType(1);
 			message.setNodesMap(nodesMap);
@@ -176,9 +184,39 @@ public class Pastry {
 			addToRoutingTable("0001");
 			pastryWriter.forwardMessage(message);
 		}
+		streetNo=Integer.parseInt(accountId)%10;
+		neighborhoodSet.add(accountId);
 	}
+	
 	public void sendNodesMap(Message message)
 	{
+		int senderStreet=Integer.parseInt(message.getSenderId())%10;
+
+		String neighbor="";
+		for (Map.Entry<String, Address> entry : nodesMap.entrySet())
+		{
+		    if(Integer.parseInt(entry.getKey())%10==senderStreet)
+		    {
+		    	neighbor=entry.getKey();
+		    	break;
+		    }
+		}
+		if(!neighbor.equals(""))
+		{
+			Message neighbors= new Message(accountId,nodesMap.get(neighbor),message.getSenderId());
+			neighbors.setNodesMap(message.getNodesMap());
+			neighbors.setMessageType(9);
+			pastryWriter.forwardMessage(neighbors);
+		}
+		else
+		{
+			Message setNeighbor= new Message(accountId,message.getNodesMap().get(message.getSenderId()),null);
+			setNeighbor.setLedger(client.getLedger());
+			setNeighbor.setNeighborhoodSet(new HashSet<String>());
+			setNeighbor.setMessageType(10);
+			pastryWriter.forwardMessage(setNeighbor);
+		}
+		
 		nodesMap.putAll(message.getNodesMap());
 		
 		String sender=message.getSenderId();
@@ -194,6 +232,27 @@ public class Pastry {
 		getNewNodeLocation.setNodesMap(message.getNodesMap());
 		routeToNode(getNewNodeLocation);	
 	}
+	
+	public void sendNeighborLedger(Message message)
+	{
+		nodesMap.putAll(message.getNodesMap());
+		message.setSenderId(accountId);
+		message.setNeighborhoodSet(neighborhoodSet);
+		message.setAddress(message.getNodesMap().get(message.getQueryAccountId()));
+		message.setLedger(client.getLedger());
+		message.setMessageType(10);
+		pastryWriter.forwardMessage(message);
+	}
+	
+	public void addNeighborhoodSet(Message message)
+	{
+		if(Integer.parseInt(message.getSenderId())%10==Integer.parseInt(accountId)%10)
+			{
+				neighborhoodSet.addAll(message.getNeighborhoodSet());
+			}
+		client.setLedger(message.getLedger());
+	}
+	
 	public void routeToNode(Message msg)
 	{
 		
@@ -344,6 +403,11 @@ public class Pastry {
 		System.out.println("["+ accountId +"] Receive broadcast from "+message.getSenderId());
 		nodesMap.putAll(message.getNodesMap());
 		
+		if(Integer.parseInt(message.getSenderId())%10==streetNo)
+		{
+			neighborhoodSet.add(message.getSenderId());
+		}
+		
 		addToRightLeafSet(message.getSenderId());
 		pkMap.put(message.getSenderId(), message.getSenderPublicKey());
 		System.out.println("["+ accountId +"] [Added right] leaf set = L:" + leftLeafSet + "  R:" + rightLeafSet);
@@ -490,11 +554,11 @@ public class Pastry {
 		this.routingTable = routingTable;
 	}
 
-	public List<String> getNeighborhoodSet() {
+	public Set<String> getNeighborhoodSet() {
 		return neighborhoodSet;
 	}
 
-	public void setNeighborhoodSet(List<String> neighborhoodSet) {
+	public void setNeighborhoodSet(Set<String> neighborhoodSet) {
 		this.neighborhoodSet = neighborhoodSet;
 	}
 

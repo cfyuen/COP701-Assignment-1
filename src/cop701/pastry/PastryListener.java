@@ -47,6 +47,14 @@ public class PastryListener {
 		{
 			this.pastry.sendLeftLeafSet(m);
 		}
+		else if(m.getMessageType()==9)
+		{
+			this.pastry.sendNeighborLedger(m);
+		}
+		else if(m.getMessageType()==10)
+		{
+			this.pastry.addNeighborhoodSet(m);
+		}
 		else {
 			logger.warning("Unknown message type");
 		}

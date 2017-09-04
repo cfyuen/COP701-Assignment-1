@@ -5,7 +5,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import cop701.node.Ledger;
 import cop701.node.Address;
 
 public class Message implements Serializable {
@@ -21,7 +23,7 @@ public class Message implements Serializable {
 	private Map<String, PublicKey> senderPkMap;
 	private PublicKey senderPublicKey;
 	private PublicKey pk;
-	
+	private Ledger ledger;
 	private int messageType;/*1:when a sender sends a request to ask for nodesMap
 	 						  2:when a nodes returns the nodesMap
 	 						  3:for routing a message to a particular accountId
@@ -29,10 +31,12 @@ public class Message implements Serializable {
 	 						  5:finding correct location of a new node
 	 						  6:msg for getting public key
 	 						  7:msg informing a node about its current location
-	 						  8:msg telling the node on the left of new node to send its details */
+	 						  8:msg telling the node on the left of new node to send its details 
+	 						  9:request to send neighborhood set
+	 						  10:send neighborhood set*/
 	private Map<String,Address> nodesMap;
 	private String[][] routingTable;
-	private List<String> neighborhoodSet;
+	private Set<String> neighborhoodSet;
 	private List<String> leftLeafSet;
 	private List<String> rightLeafSet;
 	
@@ -60,11 +64,11 @@ public class Message implements Serializable {
 		this.routingTable = routingTable;
 	}
 
-	public List<String> getNeighborhoodSet() {
+	public Set<String> getNeighborhoodSet() {
 		return neighborhoodSet;
 	}
 
-	public void setNeighborhoodSet(List<String> neighborhoodSet) {
+	public void setNeighborhoodSet(Set<String> neighborhoodSet) {
 		this.neighborhoodSet = neighborhoodSet;
 	}
 
@@ -138,5 +142,13 @@ public class Message implements Serializable {
 
 	public void setSenderPkMap(Map<String, PublicKey> senderPkMap) {
 		this.senderPkMap = senderPkMap;
+	}
+
+	public Ledger getLedger() {
+		return ledger;
+	}
+
+	public void setLedger(Ledger ledger) {
+		this.ledger = ledger;
 	}
 }
